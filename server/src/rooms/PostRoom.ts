@@ -13,12 +13,12 @@ export class PostRoom extends Room<PostState> {
   maxClients = 50;
 
   onCreate(options: any) {
-    this.setState(new PostState());
-    
-    if (options.postId) {
-      this.state.postId = options.postId;
-      this.state.postTitle = options.postTitle || 'Untitled Post';
-    }
+    const state = new PostState();
+    state.postId = options.postId || '';
+    state.postTitle = options.postTitle || 'Untitled Post';
+    state.viewCount = 0;
+    state.lastActivity = Date.now();
+    this.setState(state);
 
     // Handle cursor position updates
     this.onMessage('cursor', (client, data) => {
@@ -57,6 +57,7 @@ export class PostRoom extends Room<PostState> {
         comment.userName = user.name;
         comment.content = data.content;
         comment.timestamp = Date.now();
+        comment.isTyping = false;
         
         this.state.comments.push(comment);
         
@@ -88,19 +89,14 @@ export class PostRoom extends Room<PostState> {
   onJoin(client: Client, options: JoinOptions) {
     console.log(`${client.sessionId} joined PostRoom ${this.roomId}`);
     
-    const user = new User(
-      client.sessionId,
-      options.name || `Reader${Math.floor(Math.random() * 1000)}`
-    );
-    
-    if (options.avatar) {
-      user.avatar = options.avatar;
-    }
-
-    // Set initial position
+    const user = new User();
+    user.id = client.sessionId;
+    user.name = options.name || `Reader${Math.floor(Math.random() * 1000)}`;
     user.x = Math.floor(Math.random() * 800);
     user.y = Math.floor(Math.random() * 600);
     user.status = 'reading';
+    user.message = '';
+    user.lastActive = Date.now();
 
     this.state.users.set(client.sessionId, user);
     this.state.viewCount = this.state.users.size;

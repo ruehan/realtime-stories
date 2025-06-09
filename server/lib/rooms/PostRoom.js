@@ -10,11 +10,12 @@ class PostRoom extends colyseus_1.Room {
         this.maxClients = 50;
     }
     onCreate(options) {
-        this.setState(new PostState_1.PostState());
-        if (options.postId) {
-            this.state.postId = options.postId;
-            this.state.postTitle = options.postTitle || 'Untitled Post';
-        }
+        const state = new PostState_1.PostState();
+        state.postId = options.postId || '';
+        state.postTitle = options.postTitle || 'Untitled Post';
+        state.viewCount = 0;
+        state.lastActivity = Date.now();
+        this.setState(state);
         this.onMessage('cursor', (client, data) => {
             const user = this.state.users.get(client.sessionId);
             if (user) {
@@ -45,6 +46,7 @@ class PostRoom extends colyseus_1.Room {
                 comment.userName = user.name;
                 comment.content = data.content;
                 comment.timestamp = Date.now();
+                comment.isTyping = false;
                 this.state.comments.push(comment);
                 this.broadcast('newComment', {
                     comment: comment.toJSON()
@@ -68,13 +70,14 @@ class PostRoom extends colyseus_1.Room {
     }
     onJoin(client, options) {
         console.log(`${client.sessionId} joined PostRoom ${this.roomId}`);
-        const user = new User_1.User(client.sessionId, options.name || `Reader${Math.floor(Math.random() * 1000)}`);
-        if (options.avatar) {
-            user.avatar = options.avatar;
-        }
+        const user = new User_1.User();
+        user.id = client.sessionId;
+        user.name = options.name || `Reader${Math.floor(Math.random() * 1000)}`;
         user.x = Math.floor(Math.random() * 800);
         user.y = Math.floor(Math.random() * 600);
         user.status = 'reading';
+        user.message = '';
+        user.lastActive = Date.now();
         this.state.users.set(client.sessionId, user);
         this.state.viewCount = this.state.users.size;
         client.send('existingComments', {

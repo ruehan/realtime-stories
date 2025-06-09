@@ -10,7 +10,11 @@ class LobbyRoom extends colyseus_1.Room {
         this.maxClients = 100;
     }
     onCreate(options) {
-        this.setState(new LobbyState_1.LobbyState());
+        const state = new LobbyState_1.LobbyState();
+        state.totalUsers = 0;
+        state.currentCategory = 'all';
+        state.lastActivity = Date.now();
+        this.setState(state);
         this.onMessage('move', (client, data) => {
             const user = this.state.users.get(client.sessionId);
             if (user) {
@@ -50,12 +54,14 @@ class LobbyRoom extends colyseus_1.Room {
     }
     onJoin(client, options) {
         console.log(`${client.sessionId} joined LobbyRoom`);
-        const user = new User_1.User(client.sessionId, options.name || `User${Math.floor(Math.random() * 1000)}`);
-        if (options.avatar) {
-            user.avatar = options.avatar;
-        }
+        const user = new User_1.User();
+        user.id = client.sessionId;
+        user.name = options.name || `User${Math.floor(Math.random() * 1000)}`;
         user.x = Math.floor(Math.random() * 800);
         user.y = Math.floor(Math.random() * 600);
+        user.status = 'idle';
+        user.message = '';
+        user.lastActive = Date.now();
         this.state.users.set(client.sessionId, user);
         this.state.totalUsers = this.state.users.size;
         client.send('welcome', {

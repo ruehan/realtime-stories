@@ -10,15 +10,6 @@ exports.PostState = exports.Comment = void 0;
 const schema_1 = require("@colyseus/schema");
 const User_1 = require("./User");
 class Comment extends schema_1.Schema {
-    constructor() {
-        super(...arguments);
-        this.id = '';
-        this.userId = '';
-        this.userName = '';
-        this.content = '';
-        this.timestamp = Date.now();
-        this.isTyping = false;
-    }
 }
 exports.Comment = Comment;
 __decorate([
@@ -43,11 +34,7 @@ class PostState extends schema_1.Schema {
     constructor() {
         super(...arguments);
         this.users = new schema_1.MapSchema();
-        this.postId = '';
-        this.postTitle = '';
-        this.viewCount = 0;
         this.comments = new schema_1.ArraySchema();
-        this.lastActivity = Date.now();
     }
 }
 exports.PostState = PostState;

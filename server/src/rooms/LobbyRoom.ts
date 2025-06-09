@@ -11,7 +11,11 @@ export class LobbyRoom extends Room<LobbyState> {
   maxClients = 100;
 
   onCreate(options: any) {
-    this.setState(new LobbyState());
+    const state = new LobbyState();
+    state.totalUsers = 0;
+    state.currentCategory = 'all';
+    state.lastActivity = Date.now();
+    this.setState(state);
 
     // Handle messages from clients
     this.onMessage('move', (client, data) => {
@@ -60,18 +64,14 @@ export class LobbyRoom extends Room<LobbyState> {
   onJoin(client: Client, options: JoinOptions) {
     console.log(`${client.sessionId} joined LobbyRoom`);
     
-    const user = new User(
-      client.sessionId,
-      options.name || `User${Math.floor(Math.random() * 1000)}`
-    );
-    
-    if (options.avatar) {
-      user.avatar = options.avatar;
-    }
-
-    // Set random initial position
+    const user = new User();
+    user.id = client.sessionId;
+    user.name = options.name || `User${Math.floor(Math.random() * 1000)}`;
     user.x = Math.floor(Math.random() * 800);
     user.y = Math.floor(Math.random() * 600);
+    user.status = 'idle';
+    user.message = '';
+    user.lastActive = Date.now();
 
     this.state.users.set(client.sessionId, user);
     this.state.totalUsers = this.state.users.size;

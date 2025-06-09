@@ -13,9 +13,6 @@ class LobbyState extends schema_1.Schema {
     constructor() {
         super(...arguments);
         this.users = new schema_1.MapSchema();
-        this.totalUsers = 0;
-        this.currentCategory = 'all';
-        this.lastActivity = Date.now();
     }
 }
 exports.LobbyState = LobbyState;

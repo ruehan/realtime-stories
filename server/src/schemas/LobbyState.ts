@@ -3,7 +3,7 @@ import { User } from './User';
 
 export class LobbyState extends Schema {
   @type({ map: User }) users = new MapSchema<User>();
-  @type('number') totalUsers: number = 0;
-  @type('string') currentCategory: string = 'all';
-  @type('number') lastActivity: number = Date.now();
+  @type('number') totalUsers!: number;
+  @type('string') currentCategory!: string;
+  @type('number') lastActivity!: number;
 }

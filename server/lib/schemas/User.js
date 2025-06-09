@@ -9,17 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const schema_1 = require("@colyseus/schema");
 class User extends schema_1.Schema {
-    constructor(id, name) {
-        super();
-        this.x = 0;
-        this.y = 0;
-        this.avatar = '';
-        this.status = 'idle';
-        this.message = '';
-        this.lastActive = Date.now();
-        this.id = id;
-        this.name = name;
-    }
 }
 exports.User = User;
 __decorate([
@@ -34,9 +23,6 @@ __decorate([
 __decorate([
     (0, schema_1.type)('number')
 ], User.prototype, "y", void 0);
-__decorate([
-    (0, schema_1.type)('string')
-], User.prototype, "avatar", void 0);
 __decorate([
     (0, schema_1.type)('string')
 ], User.prototype, "status", void 0);
