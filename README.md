@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# Realtime Stories - Development Blog
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, real-time development blog built with React, featuring interactive content sharing and portfolio showcasing.
+
+## Project Overview
+
+Realtime Stories is a personal development blog platform that combines technical blog posts, portfolio projects, and professional experience in a clean, modern interface.
+
+## Tech Stack
+
+- **Frontend Framework**: React 19.1.0
+- **Language**: TypeScript 5.8.3
+- **Routing**: React Router v7
+- **Styling**: Tailwind CSS v3
+- **Code Quality**: ESLint + Prettier
+- **Build Tool**: Create React App
+
+## Project Structure
+
+```
+src/
+├── components/    # Reusable UI components
+├── pages/        # Page components (Home, Posts, etc.)
+├── hooks/        # Custom React hooks
+├── contexts/     # React Context providers
+├── services/     # API and external service integrations
+└── utils/        # Utility functions and helpers
+```
+
+## Features (Planned)
+
+- 📝 Technical blog posts with code highlighting
+- 🎨 Portfolio showcase
+- 💼 Work experience timeline
+- 🏷️ Category-based content organization
+- 🔍 Search functionality
+- 📱 Responsive design
+- 🌙 Dark mode support (future)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/realtime-stories.git
+cd realtime-stories
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm start
+```
+
+The application will open at [http://localhost:3000](http://localhost:3000).
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+- `npm run eject` - Ejects from Create React App (one-way operation)
 
-### `npm start`
+## Development Guidelines
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Code Style
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- ESLint and Prettier are configured for consistent code formatting
+- Follow React best practices and hooks guidelines
+- Use functional components with hooks
 
-### `npm test`
+### Git Workflow
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Create feature branches from `main`
+2. Follow conventional commit messages
+3. Submit pull requests for review
 
-### `npm run build`
+## Contributing
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+This is a personal project, but suggestions and feedback are welcome! Please open an issue to discuss any proposed changes.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## License
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This project is licensed under the MIT License.
 
-### `npm run eject`
+## Contact
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+For questions or collaboration opportunities, please reach out through the contact form on the website (once deployed).
