@@ -70,17 +70,10 @@ class LobbyRoom extends colyseus_1.Room {
         });
     }
     onLeave(client, consented) {
-        console.log(`${client.sessionId} left LobbyRoom`);
-        if (consented) {
-            this.state.users.delete(client.sessionId);
-        }
-        else {
-            const user = this.state.users.get(client.sessionId);
-            if (user) {
-                user.status = 'disconnected';
-            }
-        }
+        console.log(`${client.sessionId} left LobbyRoom (consented: ${consented})`);
+        this.state.users.delete(client.sessionId);
         this.state.totalUsers = this.state.users.size;
+        console.log(`Users remaining: ${this.state.totalUsers}`);
     }
     onDispose() {
         console.log('LobbyRoom disposed');

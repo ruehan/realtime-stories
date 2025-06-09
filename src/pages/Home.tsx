@@ -3,6 +3,8 @@ import { useColyseus } from '../contexts/ColyseusContext';
 import { useLobbyState } from '../hooks/useRoomState';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import OnlineUsers from '../components/OnlineUsers';
+import MiniMap from '../components/MiniMap';
+import useMiniMapData from '../hooks/useMiniMapData';
 
 const Home: React.FC = () => {
   const { joinLobby, lobbyRoom, connectionStatus } = useColyseus();
@@ -10,6 +12,44 @@ const Home: React.FC = () => {
   const { handleConnectionError } = useErrorHandler();
   const [isJoining, setIsJoining] = useState(false);
   const [userName, setUserName] = useState(`User${Math.floor(Math.random() * 1000)}`);
+  
+  // MiniMap data
+  console.log('Home page debug:', {
+    connectionStatus,
+    lobbyRoom: !!lobbyRoom,
+    lobbyRoomId: lobbyRoom?.roomId,
+    lobbySessionId: lobbyRoom?.sessionId,
+    users,
+    usersCount: users?.length,
+    state
+  });
+  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'home');
+  
+  
+
+  // Handle room navigation from minimap
+  const handleRoomNavigation = (roomId: string) => {
+    // For now, just show an alert - in a real app this would navigate to the room
+    switch (roomId) {
+      case 'about':
+        window.location.href = '/about';
+        break;
+      case 'portfolio':
+        window.location.href = '/portfolio';
+        break;
+      case 'experience':
+        window.location.href = '/work-experience';
+        break;
+      case 'categories':
+        window.location.href = '/categories';
+        break;
+      case 'posts':
+        window.location.href = '/posts';
+        break;
+      default:
+        console.log(`Navigating to room: ${roomId}`);
+    }
+  };
 
   const handleJoinLobby = async () => {
     setIsJoining(true);
@@ -73,9 +113,9 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-2xl font-semibold mb-4">Latest Features</h2>
               <div className="space-y-4">
                 <div className="border-l-4 border-blue-500 pl-4">
@@ -90,11 +130,26 @@ const Home: React.FC = () => {
                   <h3 className="font-medium">Collaborative Reading</h3>
                   <p className="text-gray-600">Share your reading experience with others</p>
                 </div>
+                <div className="border-l-4 border-orange-500 pl-4">
+                  <h3 className="font-medium">Interactive Building Map</h3>
+                  <p className="text-gray-600">Navigate through the blog like exploring a building</p>
+                </div>
               </div>
+            </div>
+
+            {/* MiniMap Component */}
+            <div className="bg-white rounded-lg shadow">
+              <MiniMap
+                rooms={rooms}
+                users={miniMapUsers}
+                currentRoomId="home"
+                onRoomClick={handleRoomNavigation}
+                className="w-full"
+              />
             </div>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <OnlineUsers users={users} currentUserId={lobbyRoom?.sessionId} />
           </div>
         </div>

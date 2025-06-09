@@ -84,19 +84,13 @@ export class LobbyRoom extends Room<LobbyState> {
   }
 
   onLeave(client: Client, consented: boolean) {
-    console.log(`${client.sessionId} left LobbyRoom`);
+    console.log(`${client.sessionId} left LobbyRoom (consented: ${consented})`);
     
-    if (consented) {
-      this.state.users.delete(client.sessionId);
-    } else {
-      // Mark user as disconnected, will be removed after timeout
-      const user = this.state.users.get(client.sessionId);
-      if (user) {
-        user.status = 'disconnected';
-      }
-    }
-    
+    // Always remove user when they leave
+    this.state.users.delete(client.sessionId);
     this.state.totalUsers = this.state.users.size;
+    
+    console.log(`Users remaining: ${this.state.totalUsers}`);
   }
 
   onDispose() {

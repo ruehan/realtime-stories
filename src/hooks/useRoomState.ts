@@ -48,24 +48,40 @@ export const useLobbyState = (room: Room | null) => {
       return;
     }
 
-    const handleStateChange = (newState: LobbyState) => {
+    const handleStateChange = (newState: any) => {
+      console.log('LobbyState changed:', newState);
+      
+      // Handle MapSchema properly
+      const userArray: User[] = [];
+      if (newState.users) {
+        newState.users.forEach((user: User) => {
+          userArray.push(user);
+        });
+      }
+      
+      console.log('Users from server:', userArray);
       setState(newState);
-      setUsers(Object.values(newState.users || {}));
+      setUsers(userArray);
     };
 
     room.onStateChange(handleStateChange);
     
-    // Handle user changes
+    // Get initial state
+    if (room.state) {
+      handleStateChange(room.state);
+    }
+    
+    // Handle user changes - these might not be needed if onStateChange handles everything
     room.state?.users?.onAdd((user: User, key: string) => {
-      setUsers(prev => [...prev.filter(u => u.id !== key), user]);
+      console.log('User added:', user, key);
     });
 
     room.state?.users?.onRemove((user: User, key: string) => {
-      setUsers(prev => prev.filter(u => u.id !== key));
+      console.log('User removed:', user, key);
     });
 
     room.state?.users?.onChange((user: User, key: string) => {
-      setUsers(prev => prev.map(u => u.id === key ? user : u));
+      console.log('User changed:', user, key);
     });
 
     return () => {
