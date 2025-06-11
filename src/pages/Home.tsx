@@ -14,15 +14,6 @@ const Home: React.FC = () => {
   const [userName, setUserName] = useState(`User${Math.floor(Math.random() * 1000)}`);
   
   // MiniMap data
-  console.log('Home page debug:', {
-    connectionStatus,
-    lobbyRoom: !!lobbyRoom,
-    lobbyRoomId: lobbyRoom?.roomId,
-    lobbySessionId: lobbyRoom?.sessionId,
-    users,
-    usersCount: users?.length,
-    state
-  });
   const { rooms, users: miniMapUsers } = useMiniMapData(users, 'home');
   
   
@@ -67,6 +58,13 @@ const Home: React.FC = () => {
     if (connectionStatus === 'disconnected' && !lobbyRoom && !isJoining) {
       handleJoinLobby();
     }
+    
+    // Leave lobby when unmounting (navigating away)
+    return () => {
+      if (lobbyRoom) {
+        console.log('Leaving lobby...');
+      }
+    };
   }, [connectionStatus, lobbyRoom]);
 
   return (

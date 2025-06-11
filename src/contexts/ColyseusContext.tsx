@@ -8,8 +8,10 @@ interface ColyseusContextType {
   currentRoom: Room | null;
   lobbyRoom: Room | null;
   postRoom: Room | null;
+  pageRoom: Room | null;
   joinLobby: (options?: RoomOptions) => Promise<Room>;
   joinPost: (postId: string, options?: RoomOptions) => Promise<Room>;
+  joinPage: (pageId: string, options?: RoomOptions) => Promise<Room>;
   leaveCurrentRoom: () => Promise<void>;
   sendMessage: (type: string, data: any) => void;
 }
@@ -35,8 +37,10 @@ export const ColyseusProvider: React.FC<ColyseusProviderProps> = ({
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [lobbyRoom, setLobbyRoom] = useState<Room | null>(null);
   const [postRoom, setPostRoom] = useState<Room | null>(null);
+  const [pageRoom, setPageRoom] = useState<Room | null>(null);
   const [isJoiningLobby, setIsJoiningLobby] = useState(false);
   const [isJoiningPost, setIsJoiningPost] = useState(false);
+  const [isJoiningPage, setIsJoiningPage] = useState(false);
 
   useEffect(() => {
     const removeListener = service.addConnectionListener(setConnectionStatus);
@@ -68,6 +72,45 @@ export const ColyseusProvider: React.FC<ColyseusProviderProps> = ({
       throw error;
     } finally {
       setIsJoiningLobby(false);
+    }
+  };
+
+  const joinPage = async (pageId: string, options: RoomOptions = {}): Promise<Room> => {
+    // If already in this page room, return it
+    if (pageRoom && currentRoom === pageRoom) {
+      return pageRoom;
+    }
+    
+    // Prevent duplicate connections
+    if (isJoiningPage) {
+      console.log('Already joining a page, skipping...');
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (pageRoom) resolve(pageRoom);
+          else reject(new Error('Failed to join page'));
+        }, 100);
+      });
+    }
+
+    setIsJoiningPage(true);
+    try {
+      // Leave current room if it's a different page/post room
+      if (currentRoom && currentRoom !== lobbyRoom) {
+        await service.leaveRoom(currentRoom);
+        setPostRoom(null);
+        setPageRoom(null);
+      }
+
+      const room = await service.joinPage(pageId, options);
+      setPageRoom(room);
+      setCurrentRoom(room);
+      
+      return room;
+    } catch (error) {
+      console.error('Failed to join page:', error);
+      throw error;
+    } finally {
+      setIsJoiningPage(false);
     }
   };
 
@@ -137,8 +180,10 @@ export const ColyseusProvider: React.FC<ColyseusProviderProps> = ({
     currentRoom,
     lobbyRoom,
     postRoom,
+    pageRoom,
     joinLobby,
     joinPost,
+    joinPage,
     leaveCurrentRoom,
     sendMessage
   };

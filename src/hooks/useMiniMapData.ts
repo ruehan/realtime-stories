@@ -32,7 +32,6 @@ const mockPosts = [
 
 export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string) => {
   const rooms: Room[] = useMemo(() => {
-    console.log('useMiniMapData received:', { currentUsers, currentRoomId, userCount: currentUsers?.length });
     // Create a building layout with rooms positioned like floors and sections
     const roomsPerFloor = 3;
     const roomWidth = 120;

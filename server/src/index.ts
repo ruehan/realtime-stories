@@ -7,6 +7,7 @@ import { monitor } from '@colyseus/monitor';
 // Import rooms
 import { LobbyRoom } from './rooms/LobbyRoom';
 import { PostRoom } from './rooms/PostRoom';
+import { PageRoom } from './rooms/PageRoom';
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
@@ -26,6 +27,7 @@ const gameServer = new Server({
 // Register room handlers
 gameServer.define('lobby', LobbyRoom);
 gameServer.define('post', PostRoom);
+gameServer.define('page', PageRoom);
 
 // Register Colyseus monitor for development
 app.use('/colyseus', monitor());

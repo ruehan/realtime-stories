@@ -49,8 +49,6 @@ export const useLobbyState = (room: Room | null) => {
     }
 
     const handleStateChange = (newState: any) => {
-      console.log('LobbyState changed:', newState);
-      
       // Handle MapSchema properly
       const userArray: User[] = [];
       if (newState.users) {
@@ -59,7 +57,6 @@ export const useLobbyState = (room: Room | null) => {
         });
       }
       
-      console.log('Users from server:', userArray);
       setState(newState);
       setUsers(userArray);
     };
@@ -72,17 +69,6 @@ export const useLobbyState = (room: Room | null) => {
     }
     
     // Handle user changes - these might not be needed if onStateChange handles everything
-    room.state?.users?.onAdd((user: User, key: string) => {
-      console.log('User added:', user, key);
-    });
-
-    room.state?.users?.onRemove((user: User, key: string) => {
-      console.log('User removed:', user, key);
-    });
-
-    room.state?.users?.onChange((user: User, key: string) => {
-      console.log('User changed:', user, key);
-    });
 
     return () => {
       room.removeAllListeners();

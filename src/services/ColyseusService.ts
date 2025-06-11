@@ -56,6 +56,24 @@ export class ColyseusService {
     }
   }
 
+  async joinPage(pageId: string, options: RoomOptions = {}): Promise<Room> {
+    try {
+      this.notifyConnectionStatus('connecting');
+      const room = await this.client.joinOrCreate('page', { 
+        ...options, 
+        pageId 
+      });
+      this.setupRoomHandlers(room);
+      this.notifyConnectionStatus('connected');
+      this.reconnectAttempts = 0;
+      return room;
+    } catch (error) {
+      console.error('Failed to join page room:', error);
+      this.notifyConnectionStatus('error');
+      throw error;
+    }
+  }
+
   async joinPost(postId: string, options: RoomOptions = {}): Promise<Room> {
     try {
       this.notifyConnectionStatus('connecting');
