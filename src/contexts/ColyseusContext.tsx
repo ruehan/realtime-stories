@@ -94,11 +94,17 @@ export const ColyseusProvider: React.FC<ColyseusProviderProps> = ({
 
     setIsJoiningPage(true);
     try {
-      // Leave current room if it's a different page/post room
-      if (currentRoom && currentRoom !== lobbyRoom) {
+      // Leave lobby if connected (Home page only)
+      if (lobbyRoom) {
+        await service.leaveRoom(lobbyRoom);
+        setLobbyRoom(null);
+      }
+
+      // Leave current page/post room if it's different
+      if (currentRoom && currentRoom !== pageRoom) {
         await service.leaveRoom(currentRoom);
-        setPostRoom(null);
-        setPageRoom(null);
+        if (postRoom === currentRoom) setPostRoom(null);
+        if (pageRoom === currentRoom) setPageRoom(null);
       }
 
       const room = await service.joinPage(pageId, options);

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { RoomStatsMap } from './useRoomStats';
 
 interface Room {
   id: string;
@@ -30,7 +31,7 @@ const mockPosts = [
   { id: 'posts', title: 'Blog Posts', category: 'content' },
 ];
 
-export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string) => {
+export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string, roomStats?: RoomStatsMap) => {
   const rooms: Room[] = useMemo(() => {
     // Create a building layout with rooms positioned like floors and sections
     const roomsPerFloor = 3;
@@ -47,9 +48,11 @@ export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string) => 
       const x = buildingPadding + roomInFloor * roomSpacing;
       const y = buildingPadding + floor * floorSpacing;
       
-      // For current room, show actual user count; for other rooms, show 0
+      // Get user count from room stats API, fallback to current users for current room
       let userCount = 0;
-      if (post.id === currentRoomId && currentUsers && currentUsers.length > 0) {
+      if (roomStats && roomStats[post.id]) {
+        userCount = roomStats[post.id].userCount || 0;
+      } else if (post.id === currentRoomId && currentUsers && currentUsers.length > 0) {
         userCount = currentUsers.length;
       }
       
@@ -64,7 +67,7 @@ export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string) => 
         isActive: post.id === currentRoomId
       };
     });
-  }, [currentRoomId, currentUsers]);
+  }, [currentRoomId, currentUsers, roomStats]);
 
   // Generate user representations only for current room with actual users
   const users: User[] = useMemo(() => {

@@ -3,10 +3,14 @@ import { useColyseus } from '../contexts/ColyseusContext';
 import { useLobbyState } from '../hooks/useRoomState';
 import MiniMap from '../components/MiniMap';
 import useMiniMapData from '../hooks/useMiniMapData';
+import useRoomStats from '../hooks/useRoomStats';
 
 const Posts: React.FC = () => {
   const { joinPage, pageRoom } = useColyseus();
   const { state, users } = useLobbyState(pageRoom);
+  
+  // Get global room stats from API
+  const { roomStats } = useRoomStats();
   
   // Auto-join posts room on mount
   useEffect(() => {
@@ -31,8 +35,8 @@ const Posts: React.FC = () => {
     };
   }, []); // 빈 의존성 배열로 한 번만 실행
   
-  // MiniMap data
-  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'posts');
+  // MiniMap data - use API room stats for global room counts
+  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'posts', roomStats);
 
   const handleRoomNavigation = (roomId: string) => {
     switch (roomId) {

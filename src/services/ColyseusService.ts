@@ -59,7 +59,7 @@ export class ColyseusService {
   async joinPage(pageId: string, options: RoomOptions = {}): Promise<Room> {
     try {
       this.notifyConnectionStatus('connecting');
-      const room = await this.client.joinOrCreate('page', { 
+      const room = await this.client.joinOrCreate(`page_${pageId}`, { 
         ...options, 
         pageId 
       });

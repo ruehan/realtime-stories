@@ -5,40 +5,57 @@ import { useErrorHandler } from '../hooks/useErrorHandler';
 import OnlineUsers from '../components/OnlineUsers';
 import MiniMap from '../components/MiniMap';
 import useMiniMapData from '../hooks/useMiniMapData';
+import useRoomStats from '../hooks/useRoomStats';
 
 const Home: React.FC = () => {
-  const { joinLobby, lobbyRoom, connectionStatus } = useColyseus();
+  const { joinLobby, lobbyRoom, connectionStatus, service } = useColyseus();
   const { state, users } = useLobbyState(lobbyRoom);
   const { handleConnectionError } = useErrorHandler();
   const [isJoining, setIsJoining] = useState(false);
   const [userName, setUserName] = useState(`User${Math.floor(Math.random() * 1000)}`);
   
-  // MiniMap data
-  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'home');
+  // Get global room stats from API
+  const { roomStats } = useRoomStats();
+  
+  // MiniMap data - use API room stats for global room counts
+  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'home', roomStats);
   
   
 
   // Handle room navigation from minimap
-  const handleRoomNavigation = (roomId: string) => {
-    // For now, just show an alert - in a real app this would navigate to the room
-    switch (roomId) {
-      case 'about':
-        window.location.href = '/about';
-        break;
-      case 'portfolio':
-        window.location.href = '/portfolio';
-        break;
-      case 'experience':
-        window.location.href = '/work-experience';
-        break;
-      case 'categories':
-        window.location.href = '/categories';
-        break;
-      case 'posts':
-        window.location.href = '/posts';
-        break;
-      default:
-        console.log(`Navigating to room: ${roomId}`);
+  const handleRoomNavigation = async (roomId: string) => {
+    if (roomId === 'home') return; // Already in home
+    
+    try {
+      // Leave lobby before navigating to other pages
+      if (lobbyRoom) {
+        await service.leaveRoom(lobbyRoom);
+      }
+      
+      // Navigate to the target page
+      switch (roomId) {
+        case 'about':
+          window.location.href = '/about';
+          break;
+        case 'portfolio':
+          window.location.href = '/portfolio';
+          break;
+        case 'experience':
+          window.location.href = '/work-experience';
+          break;
+        case 'categories':
+          window.location.href = '/categories';
+          break;
+        case 'posts':
+          window.location.href = '/posts';
+          break;
+        default:
+          console.log(`Navigating to room: ${roomId}`);
+      }
+    } catch (error) {
+      console.error('Failed to leave lobby before navigation:', error);
+      // Navigate anyway
+      window.location.href = `/${roomId}`;
     }
   };
 

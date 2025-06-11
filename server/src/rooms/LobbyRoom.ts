@@ -45,6 +45,7 @@ export class LobbyRoom extends Room<LobbyState> {
       });
     });
 
+
     // Clean up inactive users every 30 seconds
     this.setSimulationInterval(() => {
       const now = Date.now();

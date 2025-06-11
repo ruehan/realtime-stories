@@ -11,6 +11,7 @@ const monitor_1 = require("@colyseus/monitor");
 const LobbyRoom_1 = require("./rooms/LobbyRoom");
 const PostRoom_1 = require("./rooms/PostRoom");
 const PageRoom_1 = require("./rooms/PageRoom");
+const RoomStatsService_1 = __importDefault(require("./services/RoomStatsService"));
 const port = Number(process.env.PORT || 2567);
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -21,11 +22,29 @@ const gameServer = new colyseus_1.Server({
 });
 gameServer.define('lobby', LobbyRoom_1.LobbyRoom);
 gameServer.define('post', PostRoom_1.PostRoom);
-gameServer.define('page', PageRoom_1.PageRoom);
+const pages = ['about', 'portfolio', 'experience', 'categories', 'posts'];
+pages.forEach(pageId => {
+    gameServer.define(`page_${pageId}`, PageRoom_1.PageRoom, { pageId });
+});
 app.use('/colyseus', (0, monitor_1.monitor)());
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+app.get('/api/room-stats', (req, res) => {
+    const roomStatsService = RoomStatsService_1.default.getInstance();
+    const stats = roomStatsService.getRoomStats();
+    const response = {};
+    stats.forEach((stat, roomType) => {
+        response[roomType] = {
+            roomType: stat.roomType,
+            userCount: stat.userCount,
+            lastUpdated: stat.lastUpdated
+        };
+    });
+    res.json(response);
+});
 gameServer.listen(port);
+const roomStatsService = RoomStatsService_1.default.getInstance();
+roomStatsService.start();
 console.log(`🚀 Colyseus server is running on ws://localhost:${port}`);
 //# sourceMappingURL=index.js.map
