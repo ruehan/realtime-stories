@@ -42,6 +42,8 @@ export class PostService {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
+    this.initialized = true; // 먼저 플래그를 설정하여 중복 초기화 방지
+
     try {
       await fs.access(this.dataPath);
       const data = await fs.readFile(this.dataPath, 'utf8');
@@ -52,14 +54,13 @@ export class PostService {
         this.posts.set(post.id, post);
       });
 
-      console.log(`Loaded ${this.posts.size} posts from storage`);
+      console.log(`✅ Loaded ${this.posts.size} posts from storage`);
     } catch (error) {
-      console.log('No existing posts file found, starting with empty collection');
+      console.log('📝 No existing posts file found, creating sample posts...');
       // 초기 샘플 포스트 생성
       await this.createSamplePosts();
+      console.log(`✅ Created ${this.posts.size} sample posts`);
     }
-
-    this.initialized = true;
   }
 
   private async createSamplePosts(): Promise<void> {
@@ -155,6 +156,626 @@ Redis나 메모리 캐시를 활용한 성능 향상 방법을 설명합니다.`
         authorId: 'author_1',
         authorName: 'Developer',
         status: 'published'
+      },
+      {
+        metadata: {
+          title: 'CSS Grid와 Flexbox 완벽 가이드',
+          excerpt: '현대 웹 레이아웃의 핵심인 CSS Grid와 Flexbox를 실무 예제와 함께 마스터해보세요.',
+          thumbnail: '/images/css-grid-flexbox.jpg',
+          metaDescription: 'CSS Grid와 Flexbox를 활용한 반응형 웹 레이아웃 가이드',
+          keywords: ['CSS', 'Grid', 'Flexbox', '레이아웃', '반응형']
+        },
+        content: {
+          markdown: `# CSS Grid와 Flexbox 완벽 가이드
+
+현대 웹 개발에서 레이아웃을 구성하는 두 가지 핵심 기술을 깊이 있게 살펴보겠습니다.
+
+## Flexbox 기초
+
+### 1. 컨테이너 속성
+\`\`\`css
+.flex-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+\`\`\`
+
+### 2. 아이템 속성
+\`\`\`css
+.flex-item {
+  flex: 1 1 auto;
+  align-self: stretch;
+}
+\`\`\`
+
+## CSS Grid 마스터하기
+
+### 그리드 템플릿 정의
+\`\`\`css
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-rows: auto 1fr auto;
+  gap: 2rem;
+}
+\`\`\`
+
+### 그리드 영역 배치
+\`\`\`css
+.header { grid-area: 1 / 1 / 2 / -1; }
+.sidebar { grid-area: 2 / 1 / 3 / 2; }
+.main { grid-area: 2 / 2 / 3 / -1; }
+.footer { grid-area: 3 / 1 / 4 / -1; }
+\`\`\`
+
+## 실무 팁
+
+1. **언제 Flexbox를 사용할까?**
+   - 1차원 레이아웃 (행 또는 열)
+   - 컴포넌트 내부 정렬
+   - 동적 크기 조절
+
+2. **언제 Grid를 사용할까?**
+   - 2차원 레이아웃 (행과 열)
+   - 페이지 전체 구조
+   - 복잡한 레이아웃 패턴
+
+## 브라우저 호환성
+
+모든 모던 브라우저에서 완벽하게 지원되며, IE11에서도 부분적으로 사용 가능합니다.`
+        },
+        classification: {
+          category: 'Frontend',
+          tags: ['CSS', 'Grid', 'Flexbox', '레이아웃'],
+          difficulty: 'beginner',
+          primaryLanguage: 'css'
+        },
+        authorId: 'author_2',
+        authorName: 'CSS Master',
+        status: 'published',
+        featured: false
+      },
+      {
+        metadata: {
+          title: 'Next.js 13 App Router 심화 가이드',
+          excerpt: 'Next.js 13의 새로운 App Router를 활용한 고성능 웹 애플리케이션 개발법을 배워보세요.',
+          thumbnail: '/images/nextjs-app-router.jpg',
+          metaDescription: 'Next.js 13 App Router를 활용한 풀스택 개발 가이드',
+          keywords: ['Next.js', 'App Router', 'React', 'SSR', 'Server Components']
+        },
+        content: {
+          markdown: `# Next.js 13 App Router 심화 가이드
+
+Next.js 13에서 도입된 App Router는 React Server Components를 기반으로 한 새로운 라우팅 시스템입니다.
+
+## App Router vs Pages Router
+
+### 기존 Pages Router
+\`\`\`javascript
+// pages/blog/[slug].js
+export default function BlogPost({ post }) {
+  return <article>{post.content}</article>;
+}
+
+export async function getStaticProps({ params }) {
+  const post = await fetchPost(params.slug);
+  return { props: { post } };
+}
+\`\`\`
+
+### 새로운 App Router
+\`\`\`javascript
+// app/blog/[slug]/page.js
+export default async function BlogPost({ params }) {
+  const post = await fetchPost(params.slug);
+  return <article>{post.content}</article>;
+}
+\`\`\`
+
+## Server Components의 장점
+
+1. **Zero Bundle Size**: 서버에서만 실행되어 클라이언트 번들 크기 감소
+2. **Direct Database Access**: 서버에서 직접 데이터베이스 접근 가능
+3. **Improved Performance**: 초기 로딩 성능 향상
+
+## Streaming과 Suspense
+
+\`\`\`javascript
+import { Suspense } from 'react';
+
+export default function Layout({ children }) {
+  return (
+    <div>
+      <Header />
+      <Suspense fallback={<Loading />}>
+        {children}
+      </Suspense>
+      <Footer />
+    </div>
+  );
+}
+\`\`\`
+
+## 새로운 파일 규칙
+
+- \`page.js\`: 페이지 컴포넌트
+- \`layout.js\`: 레이아웃 컴포넌트
+- \`loading.js\`: 로딩 UI
+- \`error.js\`: 에러 UI
+- \`not-found.js\`: 404 페이지
+
+## 메타데이터 API
+
+\`\`\`javascript
+export const metadata = {
+  title: 'My Blog Post',
+  description: 'An amazing blog post',
+  openGraph: {
+    images: ['/og-image.jpg'],
+  },
+};
+\`\`\`
+
+## 마이그레이션 가이드
+
+기존 Pages Router에서 App Router로 점진적으로 마이그레이션하는 방법을 소개합니다.`
+        },
+        classification: {
+          category: 'Frontend',
+          tags: ['Next.js', 'React', 'App Router', 'SSR'],
+          difficulty: 'intermediate',
+          primaryLanguage: 'javascript'
+        },
+        authorId: 'author_3',
+        authorName: 'Next.js Expert',
+        status: 'published',
+        featured: true
+      },
+      {
+        metadata: {
+          title: 'Docker를 활용한 개발환경 구축',
+          excerpt: 'Docker와 Docker Compose를 사용하여 일관된 개발환경을 구축하는 방법을 알아봅시다.',
+          thumbnail: '/images/docker-dev-env.jpg',
+          metaDescription: 'Docker로 구축하는 현대적 개발환경 가이드',
+          keywords: ['Docker', 'DevOps', '컨테이너', '개발환경']
+        },
+        content: {
+          markdown: `# Docker를 활용한 개발환경 구축
+
+Docker를 사용하면 "내 컴퓨터에서는 잘 되는데"라는 문제를 해결할 수 있습니다.
+
+## Docker 기초 개념
+
+### 이미지와 컨테이너
+- **이미지**: 애플리케이션과 의존성이 패키징된 템플릿
+- **컨테이너**: 이미지의 실행 인스턴스
+
+## Dockerfile 작성하기
+
+\`\`\`dockerfile
+# Node.js 애플리케이션 예제
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 의존성 복사 및 설치
+COPY package*.json ./
+RUN npm ci --only=production
+
+# 소스 코드 복사
+COPY . .
+
+# 포트 노출
+EXPOSE 3000
+
+# 실행 명령
+CMD ["npm", "start"]
+\`\`\`
+
+## Docker Compose로 멀티 서비스 구성
+
+\`\`\`yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+\`\`\`
+
+## 최적화 팁
+
+### 1. 멀티 스테이지 빌드
+\`\`\`dockerfile
+# 빌드 스테이지
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# 실행 스테이지
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY package*.json ./
+RUN npm ci --only=production
+CMD ["npm", "start"]
+\`\`\`
+
+### 2. .dockerignore 활용
+\`\`\`
+node_modules
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.cache
+\`\`\`
+
+## 개발 워크플로우
+
+1. **로컬 개발**: \`docker-compose up -d\`
+2. **테스트**: \`docker-compose exec app npm test\`
+3. **프로덕션 빌드**: \`docker build -t myapp:prod .\`
+
+Docker를 활용하면 팀원 모두가 동일한 환경에서 개발할 수 있습니다.`
+        },
+        classification: {
+          category: 'DevOps',
+          tags: ['Docker', 'DevOps', '컨테이너', '개발환경'],
+          difficulty: 'intermediate',
+          primaryLanguage: 'dockerfile'
+        },
+        authorId: 'author_4',
+        authorName: 'DevOps Engineer',
+        status: 'published',
+        featured: false
+      },
+      {
+        metadata: {
+          title: 'JavaScript 비동기 프로그래밍 마스터하기',
+          excerpt: 'Promise, async/await, 그리고 최신 비동기 패턴까지 JavaScript 비동기 프로그래밍의 모든 것.',
+          thumbnail: '/images/js-async.jpg',
+          metaDescription: 'JavaScript 비동기 프로그래밍 완벽 가이드',
+          keywords: ['JavaScript', 'Promise', 'async', 'await', '비동기']
+        },
+        content: {
+          markdown: `# JavaScript 비동기 프로그래밍 마스터하기
+
+JavaScript의 싱글 스레드 특성과 비동기 처리의 핵심을 깊이 있게 알아보겠습니다.
+
+## 콜백에서 Promise까지
+
+### 콜백 헬의 문제
+\`\`\`javascript
+// 콜백 헬 예제
+getData(function(a) {
+  getMoreData(a, function(b) {
+    getEvenMoreData(b, function(c) {
+      // 지옥의 시작...
+    });
+  });
+});
+\`\`\`
+
+### Promise로 해결
+\`\`\`javascript
+getData()
+  .then(a => getMoreData(a))
+  .then(b => getEvenMoreData(b))
+  .then(c => {
+    // 깔끔한 체이닝
+  })
+  .catch(error => console.error(error));
+\`\`\`
+
+## Async/Await의 우아함
+
+\`\`\`javascript
+async function fetchUserData(userId) {
+  try {
+    const user = await fetch(\`/api/users/\${userId}\`);
+    const userData = await user.json();
+    const posts = await fetch(\`/api/users/\${userId}/posts\`);
+    const postsData = await posts.json();
+    
+    return { user: userData, posts: postsData };
+  } catch (error) {
+    console.error('데이터 페치 실패:', error);
+    throw error;
+  }
+}
+\`\`\`
+
+## 병렬 처리 최적화
+
+### Promise.all 활용
+\`\`\`javascript
+async function fetchAllData() {
+  const [users, posts, comments] = await Promise.all([
+    fetch('/api/users').then(r => r.json()),
+    fetch('/api/posts').then(r => r.json()),
+    fetch('/api/comments').then(r => r.json())
+  ]);
+  
+  return { users, posts, comments };
+}
+\`\`\`
+
+### Promise.allSettled로 에러 핸들링
+\`\`\`javascript
+async function fetchWithErrorHandling() {
+  const results = await Promise.allSettled([
+    fetch('/api/critical-data'),
+    fetch('/api/optional-data'),
+    fetch('/api/experimental-data')
+  ]);
+  
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      console.log(\`요청 \${index} 성공:, result.value\`);
+    } else {
+      console.log(\`요청 \${index} 실패:, result.reason\`);
+    }
+  });
+}
+\`\`\`
+
+## 고급 패턴들
+
+### 커스텀 Promise 생성
+\`\`\`javascript
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function timeoutPromise(promise, ms) {
+  return Promise.race([
+    promise,
+    delay(ms).then(() => Promise.reject(new Error('Timeout')))
+  ]);
+}
+\`\`\`
+
+### 재시도 로직
+\`\`\`javascript
+async function retryOperation(operation, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await delay(1000 * Math.pow(2, i)); // 지수 백오프
+    }
+  }
+}
+\`\`\`
+
+## 이벤트 루프 이해하기
+
+JavaScript 엔진의 이벤트 루프 동작 방식을 이해하면 비동기 코드의 실행 순서를 예측할 수 있습니다.
+
+비동기 프로그래밍을 마스터하면 더 나은 사용자 경험을 제공할 수 있습니다.`
+        },
+        classification: {
+          category: 'Frontend',
+          tags: ['JavaScript', 'Promise', 'async', 'await'],
+          difficulty: 'intermediate',
+          primaryLanguage: 'javascript'
+        },
+        authorId: 'author_1',
+        authorName: 'Developer',
+        status: 'published',
+        featured: false
+      },
+      {
+        metadata: {
+          title: '웹 성능 최적화 체크리스트',
+          excerpt: '실제 프로젝트에서 적용할 수 있는 웹 성능 최적화 기법들을 단계별로 정리했습니다.',
+          thumbnail: '/images/web-performance.jpg',
+          metaDescription: '웹 성능 최적화를 위한 실무 체크리스트',
+          keywords: ['성능최적화', '웹성능', 'Core Web Vitals', 'SEO']
+        },
+        content: {
+          markdown: `# 웹 성능 최적화 체크리스트
+
+사용자 경험과 SEO에 직결되는 웹 성능 최적화 기법들을 실무 관점에서 정리했습니다.
+
+## Core Web Vitals 이해하기
+
+Google이 정의한 핵심 웹 성능 지표들입니다:
+
+### 1. LCP (Largest Contentful Paint)
+- **목표**: 2.5초 이내
+- **최적화 방법**:
+  - 이미지 최적화
+  - 서버 응답 시간 개선
+  - 리소스 로딩 우선순위 조정
+
+### 2. FID (First Input Delay)  
+- **목표**: 100ms 이내
+- **최적화 방법**:
+  - JavaScript 실행 시간 단축
+  - 메인 스레드 블로킹 최소화
+  - 코드 분할
+
+### 3. CLS (Cumulative Layout Shift)
+- **목표**: 0.1 이내  
+- **최적화 방법**:
+  - 이미지/비디오 크기 명시
+  - 동적 콘텐츠 삽입 최소화
+
+## 이미지 최적화 전략
+
+### 최신 포맷 사용
+\`\`\`html
+<picture>
+  <source srcset="image.avif" type="image/avif">
+  <source srcset="image.webp" type="image/webp">
+  <img src="image.jpg" alt="설명" loading="lazy">
+</picture>
+\`\`\`
+
+### 적응형 이미지
+\`\`\`html
+<img
+  srcset="small.jpg 480w, medium.jpg 800w, large.jpg 1200w"
+  sizes="(max-width: 480px) 100vw, (max-width: 800px) 50vw, 25vw"
+  src="medium.jpg"
+  alt="반응형 이미지"
+>
+\`\`\`
+
+## JavaScript 최적화
+
+### 코드 분할
+\`\`\`javascript
+// 동적 import를 사용한 코드 분할
+const LazyComponent = lazy(() => import('./LazyComponent'));
+
+// 라우트 기반 분할
+const HomePage = lazy(() => import('./pages/Home'));
+const AboutPage = lazy(() => import('./pages/About'));
+\`\`\`
+
+### Tree Shaking
+\`\`\`javascript
+// ❌ 전체 라이브러리 import
+import _ from 'lodash';
+
+// ✅ 필요한 함수만 import
+import { debounce } from 'lodash';
+\`\`\`
+
+## CSS 최적화
+
+### Critical CSS 인라인화
+\`\`\`html
+<style>
+  /* Above-the-fold 스타일만 인라인 */
+  .header { /* critical styles */ }
+  .hero { /* critical styles */ }
+</style>
+
+<link rel="preload" href="non-critical.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+\`\`\`
+
+### CSS 압축 및 정리
+\`\`\`javascript
+// PostCSS 설정
+module.exports = {
+  plugins: [
+    require('autoprefixer'),
+    require('cssnano')({
+      preset: 'default',
+    }),
+  ],
+};
+\`\`\`
+
+## 리소스 힌트 활용
+
+\`\`\`html
+<!-- DNS 사전 해석 -->
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+
+<!-- 연결 사전 설정 -->
+<link rel="preconnect" href="https://api.example.com">
+
+<!-- 리소스 사전 로딩 -->
+<link rel="preload" href="hero-image.jpg" as="image">
+
+<!-- 다음 페이지 사전 페치 -->
+<link rel="prefetch" href="/next-page.html">
+\`\`\`
+
+## 캐싱 전략
+
+### 서비스 워커 활용
+\`\`\`javascript
+// sw.js
+const CACHE_NAME = 'my-app-v1';
+const urlsToCache = [
+  '/',
+  '/static/css/main.css',
+  '/static/js/main.js'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+});
+\`\`\`
+
+## 성능 측정 도구
+
+1. **Lighthouse**: Chrome 내장 도구
+2. **WebPageTest**: 상세한 성능 분석
+3. **GTmetrix**: 종합적인 성능 리포트
+4. **Chrome DevTools**: 실시간 성능 모니터링
+
+## 모니터링 설정
+
+\`\`\`javascript
+// 성능 메트릭 수집
+function measurePerformance() {
+  const observer = new PerformanceObserver((list) => {
+    list.getEntries().forEach((entry) => {
+      // 분석 서비스로 전송
+      analytics.track('performance', {
+        name: entry.name,
+        value: entry.value,
+        rating: entry.rating
+      });
+    });
+  });
+  
+  observer.observe({ entryTypes: ['web-vitals'] });
+}
+\`\`\`
+
+성능 최적화는 지속적인 과정입니다. 정기적인 모니터링과 개선이 중요합니다.`
+        },
+        classification: {
+          category: 'Frontend',
+          tags: ['성능최적화', '웹성능', 'Core Web Vitals'],
+          difficulty: 'advanced',
+          primaryLanguage: 'javascript'
+        },
+        authorId: 'author_2',
+        authorName: 'CSS Master',
+        status: 'published',
+        featured: true
       }
     ];
 

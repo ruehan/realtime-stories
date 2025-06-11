@@ -45,6 +45,15 @@ app.get('/api/room-stats', (req, res) => {
     res.json(response);
 });
 const postService = PostService_1.PostService.getInstance();
+(async () => {
+    try {
+        await postService.initialize();
+        console.log('🚀 PostService initialized successfully');
+    }
+    catch (error) {
+        console.error('❌ Failed to initialize PostService:', error);
+    }
+})();
 app.get('/api/posts', async (req, res) => {
     try {
         const { status, category, tag, featured, authorId, search, limit, offset } = req.query;

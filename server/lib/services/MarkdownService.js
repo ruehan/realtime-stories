@@ -28,27 +28,29 @@ class MarkdownService {
     }
     setupRenderer() {
         this.renderer.heading = (text, level) => {
-            const anchor = (0, slugify_1.default)(text, { lower: true, strict: true });
+            const textString = typeof text === 'string' ? text : String(text || '');
+            const anchor = (0, slugify_1.default)(textString, { lower: true, strict: true });
             const id = `heading-${anchor}`;
             this.tocItems.push({
                 id,
-                title: text,
+                title: textString,
                 level,
                 anchor
             });
             return `<h${level} id="${id}" class="heading-${level}">
         <a href="#${anchor}" class="anchor-link" aria-hidden="true">#</a>
-        ${text}
+        ${textString}
       </h${level}>`;
         };
         this.renderer.code = (code, language) => {
-            this.codeBlocks.push(code);
+            const codeString = typeof code === 'string' ? code : String(code || '');
+            this.codeBlocks.push(codeString);
             if (language) {
                 this.languages.add(language);
-                let highlightedCode = code;
+                let highlightedCode = codeString;
                 try {
                     if (highlight_js_1.default.getLanguage(language)) {
-                        highlightedCode = highlight_js_1.default.highlight(code, { language }).value;
+                        highlightedCode = highlight_js_1.default.highlight(codeString, { language }).value;
                     }
                 }
                 catch (error) {
@@ -57,7 +59,7 @@ class MarkdownService {
                 return `<div class="code-block-container">
           <div class="code-block-header">
             <span class="code-language">${language}</span>
-            <button class="copy-button" data-code="${this.escapeHtml(code)}">
+            <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -70,7 +72,7 @@ class MarkdownService {
             }
             return `<div class="code-block-container">
         <div class="code-block-header">
-          <button class="copy-button" data-code="${this.escapeHtml(code)}">
+          <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -78,36 +80,46 @@ class MarkdownService {
             Copy
           </button>
         </div>
-        <pre class="hljs"><code>${this.escapeHtml(code)}</code></pre>
+        <pre class="hljs"><code>${this.escapeHtml(codeString)}</code></pre>
       </div>`;
         };
         this.renderer.codespan = (code) => {
-            return `<code class="inline-code">${this.escapeHtml(code)}</code>`;
+            const codeString = typeof code === 'string' ? code : String(code || '');
+            return `<code class="inline-code">${this.escapeHtml(codeString)}</code>`;
         };
         this.renderer.link = (href, title, text) => {
-            const isExternal = href.startsWith('http') && !href.includes(process.env.DOMAIN || 'localhost');
-            const titleAttr = title ? ` title="${this.escapeHtml(title)}"` : '';
+            const hrefString = typeof href === 'string' ? href : String(href || '');
+            const textString = typeof text === 'string' ? text : String(text || '');
+            const titleString = typeof title === 'string' ? title : String(title || '');
+            const isExternal = hrefString.startsWith('http') && !hrefString.includes(process.env.DOMAIN || 'localhost');
+            const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
             const externalAttrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
-            return `<a href="${this.escapeHtml(href)}"${titleAttr}${externalAttrs}>${text}</a>`;
+            return `<a href="${this.escapeHtml(hrefString)}"${titleAttr}${externalAttrs}>${textString}</a>`;
         };
         this.renderer.image = (href, title, text) => {
-            const titleAttr = title ? ` title="${this.escapeHtml(title)}"` : '';
-            const altAttr = ` alt="${this.escapeHtml(text)}"`;
+            const hrefString = typeof href === 'string' ? href : String(href || '');
+            const textString = typeof text === 'string' ? text : String(text || '');
+            const titleString = typeof title === 'string' ? title : String(title || '');
+            const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
+            const altAttr = ` alt="${this.escapeHtml(textString)}"`;
             return `<figure class="image-figure">
-        <img src="${this.escapeHtml(href)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
-        ${text ? `<figcaption>${text}</figcaption>` : ''}
+        <img src="${this.escapeHtml(hrefString)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
+        ${textString ? `<figcaption>${textString}</figcaption>` : ''}
       </figure>`;
         };
         this.renderer.table = (header, body) => {
+            const headerString = typeof header === 'string' ? header : String(header || '');
+            const bodyString = typeof body === 'string' ? body : String(body || '');
             return `<div class="table-container">
         <table class="responsive-table">
-          <thead>${header}</thead>
-          <tbody>${body}</tbody>
+          <thead>${headerString}</thead>
+          <tbody>${bodyString}</tbody>
         </table>
       </div>`;
         };
         this.renderer.blockquote = (quote) => {
-            return `<blockquote class="custom-blockquote">${quote}</blockquote>`;
+            const quoteString = typeof quote === 'string' ? quote : String(quote || '');
+            return `<blockquote class="custom-blockquote">${quoteString}</blockquote>`;
         };
     }
     setupMarked() {

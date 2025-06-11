@@ -64,6 +64,16 @@ app.get('/api/room-stats', (req, res) => {
 // Blog Posts API
 const postService = PostService.getInstance();
 
+// Initialize PostService on startup
+(async () => {
+  try {
+    await postService.initialize();
+    console.log('🚀 PostService initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize PostService:', error);
+  }
+})();
+
 // Get all posts with filtering
 app.get('/api/posts', async (req, res) => {
   try {

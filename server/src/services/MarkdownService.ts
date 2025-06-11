@@ -54,34 +54,37 @@ export class MarkdownService {
   private setupRenderer(): void {
     // 헤딩 렌더러 - TOC 생성을 위해
     this.renderer.heading = (text: string, level: number) => {
-      const anchor = slugify(text, { lower: true, strict: true });
+      // text가 문자열인지 확인하고 변환
+      const textString = typeof text === 'string' ? text : String(text || '');
+      const anchor = slugify(textString, { lower: true, strict: true });
       const id = `heading-${anchor}`;
       
       this.tocItems.push({
         id,
-        title: text,
+        title: textString,
         level,
         anchor
       });
 
       return `<h${level} id="${id}" class="heading-${level}">
         <a href="#${anchor}" class="anchor-link" aria-hidden="true">#</a>
-        ${text}
+        ${textString}
       </h${level}>`;
     };
 
     // 코드 블록 렌더러 - 문법 하이라이팅
     this.renderer.code = (code: string, language?: string) => {
-      this.codeBlocks.push(code);
+      const codeString = typeof code === 'string' ? code : String(code || '');
+      this.codeBlocks.push(codeString);
       
       if (language) {
         this.languages.add(language);
         
         // 코드 하이라이팅 적용
-        let highlightedCode = code;
+        let highlightedCode = codeString;
         try {
           if (hljs.getLanguage(language)) {
-            highlightedCode = hljs.highlight(code, { language }).value;
+            highlightedCode = hljs.highlight(codeString, { language }).value;
           }
         } catch (error) {
           console.warn(`Failed to highlight code for language: ${language}`, error);
@@ -90,7 +93,7 @@ export class MarkdownService {
         return `<div class="code-block-container">
           <div class="code-block-header">
             <span class="code-language">${language}</span>
-            <button class="copy-button" data-code="${this.escapeHtml(code)}">
+            <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -104,7 +107,7 @@ export class MarkdownService {
 
       return `<div class="code-block-container">
         <div class="code-block-header">
-          <button class="copy-button" data-code="${this.escapeHtml(code)}">
+          <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
@@ -112,48 +115,61 @@ export class MarkdownService {
             Copy
           </button>
         </div>
-        <pre class="hljs"><code>${this.escapeHtml(code)}</code></pre>
+        <pre class="hljs"><code>${this.escapeHtml(codeString)}</code></pre>
       </div>`;
     };
 
     // 인라인 코드 렌더러
     this.renderer.codespan = (code: string) => {
-      return `<code class="inline-code">${this.escapeHtml(code)}</code>`;
+      const codeString = typeof code === 'string' ? code : String(code || '');
+      return `<code class="inline-code">${this.escapeHtml(codeString)}</code>`;
     };
 
     // 링크 렌더러 - 보안 및 접근성 향상
     this.renderer.link = (href: string, title: string | null | undefined, text: string) => {
-      const isExternal = href.startsWith('http') && !href.includes(process.env.DOMAIN || 'localhost');
-      const titleAttr = title ? ` title="${this.escapeHtml(title)}"` : '';
+      const hrefString = typeof href === 'string' ? href : String(href || '');
+      const textString = typeof text === 'string' ? text : String(text || '');
+      const titleString = typeof title === 'string' ? title : String(title || '');
+      
+      const isExternal = hrefString.startsWith('http') && !hrefString.includes(process.env.DOMAIN || 'localhost');
+      const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
       const externalAttrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
       
-      return `<a href="${this.escapeHtml(href)}"${titleAttr}${externalAttrs}>${text}</a>`;
+      return `<a href="${this.escapeHtml(hrefString)}"${titleAttr}${externalAttrs}>${textString}</a>`;
     };
 
     // 이미지 렌더러 - 지연 로딩 및 접근성
     this.renderer.image = (href: string, title: string | null | undefined, text: string) => {
-      const titleAttr = title ? ` title="${this.escapeHtml(title)}"` : '';
-      const altAttr = ` alt="${this.escapeHtml(text)}"`;
+      const hrefString = typeof href === 'string' ? href : String(href || '');
+      const textString = typeof text === 'string' ? text : String(text || '');
+      const titleString = typeof title === 'string' ? title : String(title || '');
+      
+      const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
+      const altAttr = ` alt="${this.escapeHtml(textString)}"`;
       
       return `<figure class="image-figure">
-        <img src="${this.escapeHtml(href)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
-        ${text ? `<figcaption>${text}</figcaption>` : ''}
+        <img src="${this.escapeHtml(hrefString)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
+        ${textString ? `<figcaption>${textString}</figcaption>` : ''}
       </figure>`;
     };
 
     // 테이블 렌더러 - 반응형 테이블
     this.renderer.table = (header: string, body: string) => {
+      const headerString = typeof header === 'string' ? header : String(header || '');
+      const bodyString = typeof body === 'string' ? body : String(body || '');
+      
       return `<div class="table-container">
         <table class="responsive-table">
-          <thead>${header}</thead>
-          <tbody>${body}</tbody>
+          <thead>${headerString}</thead>
+          <tbody>${bodyString}</tbody>
         </table>
       </div>`;
     };
 
     // 블록쿼트 렌더러
     this.renderer.blockquote = (quote: string) => {
-      return `<blockquote class="custom-blockquote">${quote}</blockquote>`;
+      const quoteString = typeof quote === 'string' ? quote : String(quote || '');
+      return `<blockquote class="custom-blockquote">${quoteString}</blockquote>`;
     };
   }
 
