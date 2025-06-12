@@ -52,130 +52,11 @@ export class MarkdownService {
   }
 
   private setupRenderer(): void {
-    // 헤딩 렌더러 - TOC 생성을 위해
-    this.renderer.heading = (text: string, level: number) => {
-      // text가 문자열인지 확인하고 변환
-      const textString = typeof text === 'string' ? text : String(text || '');
-      const anchor = slugify(textString, { lower: true, strict: true });
-      const id = `heading-${anchor}`;
-      
-      this.tocItems.push({
-        id,
-        title: textString,
-        level,
-        anchor
-      });
-
-      return `<h${level} id="${id}" class="heading-${level}">
-        <a href="#${anchor}" class="anchor-link" aria-hidden="true">#</a>
-        ${textString}
-      </h${level}>`;
-    };
-
-    // 코드 블록 렌더러 - 문법 하이라이팅
-    this.renderer.code = (code: string, language?: string) => {
-      const codeString = typeof code === 'string' ? code : String(code || '');
-      this.codeBlocks.push(codeString);
-      
-      if (language) {
-        this.languages.add(language);
-        
-        // 코드 하이라이팅 적용
-        let highlightedCode = codeString;
-        try {
-          if (hljs.getLanguage(language)) {
-            highlightedCode = hljs.highlight(codeString, { language }).value;
-          }
-        } catch (error) {
-          console.warn(`Failed to highlight code for language: ${language}`, error);
-        }
-
-        return `<div class="code-block-container">
-          <div class="code-block-header">
-            <span class="code-language">${language}</span>
-            <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              Copy
-            </button>
-          </div>
-          <pre class="hljs"><code class="language-${language}">${highlightedCode}</code></pre>
-        </div>`;
-      }
-
-      return `<div class="code-block-container">
-        <div class="code-block-header">
-          <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            Copy
-          </button>
-        </div>
-        <pre class="hljs"><code>${this.escapeHtml(codeString)}</code></pre>
-      </div>`;
-    };
-
-    // 인라인 코드 렌더러
-    this.renderer.codespan = (code: string) => {
-      const codeString = typeof code === 'string' ? code : String(code || '');
-      return `<code class="inline-code">${this.escapeHtml(codeString)}</code>`;
-    };
-
-    // 링크 렌더러 - 보안 및 접근성 향상
-    this.renderer.link = (href: string, title: string | null | undefined, text: string) => {
-      const hrefString = typeof href === 'string' ? href : String(href || '');
-      const textString = typeof text === 'string' ? text : String(text || '');
-      const titleString = typeof title === 'string' ? title : String(title || '');
-      
-      const isExternal = hrefString.startsWith('http') && !hrefString.includes(process.env.DOMAIN || 'localhost');
-      const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
-      const externalAttrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
-      
-      return `<a href="${this.escapeHtml(hrefString)}"${titleAttr}${externalAttrs}>${textString}</a>`;
-    };
-
-    // 이미지 렌더러 - 지연 로딩 및 접근성
-    this.renderer.image = (href: string, title: string | null | undefined, text: string) => {
-      const hrefString = typeof href === 'string' ? href : String(href || '');
-      const textString = typeof text === 'string' ? text : String(text || '');
-      const titleString = typeof title === 'string' ? title : String(title || '');
-      
-      const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
-      const altAttr = ` alt="${this.escapeHtml(textString)}"`;
-      
-      return `<figure class="image-figure">
-        <img src="${this.escapeHtml(hrefString)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
-        ${textString ? `<figcaption>${textString}</figcaption>` : ''}
-      </figure>`;
-    };
-
-    // 테이블 렌더러 - 반응형 테이블
-    this.renderer.table = (header: string, body: string) => {
-      const headerString = typeof header === 'string' ? header : String(header || '');
-      const bodyString = typeof body === 'string' ? body : String(body || '');
-      
-      return `<div class="table-container">
-        <table class="responsive-table">
-          <thead>${headerString}</thead>
-          <tbody>${bodyString}</tbody>
-        </table>
-      </div>`;
-    };
-
-    // 블록쿼트 렌더러
-    this.renderer.blockquote = (quote: string) => {
-      const quoteString = typeof quote === 'string' ? quote : String(quote || '');
-      return `<blockquote class="custom-blockquote">${quoteString}</blockquote>`;
-    };
+    // 커스텀 렌더러 사용하지 않음 - 기본 marked.js만 사용
   }
 
   private setupMarked(): void {
     marked.setOptions({
-      renderer: this.renderer,
       pedantic: false,
       gfm: true,
       breaks: false
@@ -214,8 +95,16 @@ export class MarkdownService {
     this.resetState();
 
     try {
-      // 마크다운을 HTML로 변환
+      // 마크다운을 HTML로 변환 (기본 marked.js만 사용)
       let html = marked.parse(markdown) as string;
+
+      // 기본 TOC 생성 (후처리로)
+      if (generateTOC) {
+        this.generateTOCFromHTML(html);
+      }
+
+      // 코드 블록 추출 (후처리로)
+      this.extractCodeBlocksFromMarkdown(markdown);
 
       // HTML 살균처리
       if (sanitize) {
@@ -230,30 +119,14 @@ export class MarkdownService {
             'a',
             'img', 'figure', 'figcaption',
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
-            'div', 'span',
-            'svg', 'path', 'rect', // 아이콘용
-            'button' // 복사 버튼용
+            'div', 'span'
           ],
           ALLOWED_ATTR: [
             'href', 'title', 'alt', 'src', 'loading',
             'target', 'rel',
-            'id', 'class',
-            'data-code', // 복사 기능용
-            'width', 'height', 'viewBox', 'fill', 'stroke', 'stroke-width', // SVG용
-            'd' // SVG path용
-          ],
-          ALLOW_DATA_ATTR: true
+            'id', 'class'
+          ]
         });
-      }
-
-      // Mermaid 다이어그램 처리 (향후 확장)
-      if (options.enableMermaid) {
-        html = this.processMermaidDiagrams(html);
-      }
-
-      // 수식 처리 (향후 확장)
-      if (options.enableMath) {
-        html = this.processMathExpressions(html);
       }
 
       return {
@@ -267,6 +140,40 @@ export class MarkdownService {
     } catch (error) {
       console.error('Failed to render markdown:', error);
       throw new Error('Markdown rendering failed');
+    }
+  }
+
+  private generateTOCFromHTML(html: string): void {
+    // 간단한 정규식으로 헤딩 추출
+    const headingRegex = /<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/g;
+    let match;
+    
+    while ((match = headingRegex.exec(html)) !== null) {
+      const level = parseInt(match[1]);
+      const title = match[3].replace(/<[^>]*>/g, ''); // HTML 태그 제거
+      const anchor = slugify(title, { lower: true, strict: true });
+      
+      this.tocItems.push({
+        id: `heading-${anchor}`,
+        title,
+        level,
+        anchor
+      });
+    }
+  }
+
+  private extractCodeBlocksFromMarkdown(markdown: string): void {
+    const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+    let match;
+    
+    while ((match = codeBlockRegex.exec(markdown)) !== null) {
+      const language = match[1] || 'text';
+      const code = match[2];
+      
+      this.codeBlocks.push(code);
+      if (language) {
+        this.languages.add(language);
+      }
     }
   }
 

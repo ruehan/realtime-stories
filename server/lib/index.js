@@ -76,12 +76,13 @@ app.get('/api/posts', async (req, res) => {
         }
         const limitNum = limit ? parseInt(limit) : undefined;
         const offsetNum = offset ? parseInt(offset) : 0;
+        const totalPosts = posts.length;
         if (limitNum) {
             posts = posts.slice(offsetNum, offsetNum + limitNum);
         }
         res.json({
             posts,
-            total: posts.length,
+            total: totalPosts,
             limit: limitNum,
             offset: offsetNum
         });

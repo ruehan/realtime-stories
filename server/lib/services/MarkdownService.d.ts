@@ -32,6 +32,8 @@ export declare class MarkdownService {
     private calculateReadingTime;
     private resetState;
     render(markdown: string, options?: MarkdownOptions): MarkdownResult;
+    private generateTOCFromHTML;
+    private extractCodeBlocksFromMarkdown;
     private processMermaidDiagrams;
     private processMathExpressions;
     extractCodeBlocks(markdown: string): Array<{

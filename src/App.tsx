@@ -7,6 +7,7 @@ import ConnectionStatus from './components/ConnectionStatus';
 import ErrorNotification from './components/ErrorNotification';
 import Home from './pages/Home';
 import Posts from './pages/Posts';
+import PostDetail from './pages/PostDetail';
 import Categories from './pages/Categories';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
@@ -26,6 +27,7 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/posts" element={<Posts />} />
+          <Route path="/posts/:slug" element={<PostDetail />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/about" element={<About />} />
           <Route path="/portfolio" element={<Portfolio />} />

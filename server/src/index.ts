@@ -99,6 +99,7 @@ app.get('/api/posts', async (req, res) => {
     // Apply pagination
     const limitNum = limit ? parseInt(limit as string) : undefined;
     const offsetNum = offset ? parseInt(offset as string) : 0;
+    const totalPosts = posts.length; // Store total before pagination
     
     if (limitNum) {
       posts = posts.slice(offsetNum, offsetNum + limitNum);
@@ -106,7 +107,7 @@ app.get('/api/posts', async (req, res) => {
 
     res.json({
       posts,
-      total: posts.length,
+      total: totalPosts,
       limit: limitNum,
       offset: offsetNum
     });

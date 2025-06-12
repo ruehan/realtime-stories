@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Post, PostsResponse, postService } from '../services/PostService';
+import { Post, postService } from '../services/PostService';
 
 interface UseInfiniteScrollOptions {
   limit?: number;
@@ -45,7 +45,7 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions = {}): UseIn
     setError(null);
 
     try {
-      const response: PostsResponse = await postService.getPosts({
+      const response = await postService.getPosts({
         status: 'published',
         category,
         tag,
@@ -62,7 +62,7 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions = {}): UseIn
         setPosts(prev => {
           // Avoid duplicates
           const existingIds = new Set(prev.map(post => post.id));
-          const uniqueNewPosts = newPosts.filter(post => !existingIds.has(post.id));
+          const uniqueNewPosts = newPosts.filter((post: Post) => !existingIds.has(post.id));
           return [...prev, ...uniqueNewPosts];
         });
         setOffset(prev => prev + newPosts.length);

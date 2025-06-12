@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MarkdownService = void 0;
 const marked_1 = require("marked");
-const highlight_js_1 = __importDefault(require("highlight.js"));
 const dompurify_1 = __importDefault(require("dompurify"));
 const jsdom_1 = require("jsdom");
 const slugify_1 = __importDefault(require("slugify"));
@@ -27,104 +26,9 @@ class MarkdownService {
         return MarkdownService.instance;
     }
     setupRenderer() {
-        this.renderer.heading = (text, level) => {
-            const textString = typeof text === 'string' ? text : String(text || '');
-            const anchor = (0, slugify_1.default)(textString, { lower: true, strict: true });
-            const id = `heading-${anchor}`;
-            this.tocItems.push({
-                id,
-                title: textString,
-                level,
-                anchor
-            });
-            return `<h${level} id="${id}" class="heading-${level}">
-        <a href="#${anchor}" class="anchor-link" aria-hidden="true">#</a>
-        ${textString}
-      </h${level}>`;
-        };
-        this.renderer.code = (code, language) => {
-            const codeString = typeof code === 'string' ? code : String(code || '');
-            this.codeBlocks.push(codeString);
-            if (language) {
-                this.languages.add(language);
-                let highlightedCode = codeString;
-                try {
-                    if (highlight_js_1.default.getLanguage(language)) {
-                        highlightedCode = highlight_js_1.default.highlight(codeString, { language }).value;
-                    }
-                }
-                catch (error) {
-                    console.warn(`Failed to highlight code for language: ${language}`, error);
-                }
-                return `<div class="code-block-container">
-          <div class="code-block-header">
-            <span class="code-language">${language}</span>
-            <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-              Copy
-            </button>
-          </div>
-          <pre class="hljs"><code class="language-${language}">${highlightedCode}</code></pre>
-        </div>`;
-            }
-            return `<div class="code-block-container">
-        <div class="code-block-header">
-          <button class="copy-button" data-code="${this.escapeHtml(codeString)}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            Copy
-          </button>
-        </div>
-        <pre class="hljs"><code>${this.escapeHtml(codeString)}</code></pre>
-      </div>`;
-        };
-        this.renderer.codespan = (code) => {
-            const codeString = typeof code === 'string' ? code : String(code || '');
-            return `<code class="inline-code">${this.escapeHtml(codeString)}</code>`;
-        };
-        this.renderer.link = (href, title, text) => {
-            const hrefString = typeof href === 'string' ? href : String(href || '');
-            const textString = typeof text === 'string' ? text : String(text || '');
-            const titleString = typeof title === 'string' ? title : String(title || '');
-            const isExternal = hrefString.startsWith('http') && !hrefString.includes(process.env.DOMAIN || 'localhost');
-            const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
-            const externalAttrs = isExternal ? ' target="_blank" rel="noopener noreferrer"' : '';
-            return `<a href="${this.escapeHtml(hrefString)}"${titleAttr}${externalAttrs}>${textString}</a>`;
-        };
-        this.renderer.image = (href, title, text) => {
-            const hrefString = typeof href === 'string' ? href : String(href || '');
-            const textString = typeof text === 'string' ? text : String(text || '');
-            const titleString = typeof title === 'string' ? title : String(title || '');
-            const titleAttr = titleString ? ` title="${this.escapeHtml(titleString)}"` : '';
-            const altAttr = ` alt="${this.escapeHtml(textString)}"`;
-            return `<figure class="image-figure">
-        <img src="${this.escapeHtml(hrefString)}"${altAttr}${titleAttr} loading="lazy" class="responsive-image">
-        ${textString ? `<figcaption>${textString}</figcaption>` : ''}
-      </figure>`;
-        };
-        this.renderer.table = (header, body) => {
-            const headerString = typeof header === 'string' ? header : String(header || '');
-            const bodyString = typeof body === 'string' ? body : String(body || '');
-            return `<div class="table-container">
-        <table class="responsive-table">
-          <thead>${headerString}</thead>
-          <tbody>${bodyString}</tbody>
-        </table>
-      </div>`;
-        };
-        this.renderer.blockquote = (quote) => {
-            const quoteString = typeof quote === 'string' ? quote : String(quote || '');
-            return `<blockquote class="custom-blockquote">${quoteString}</blockquote>`;
-        };
     }
     setupMarked() {
         marked_1.marked.setOptions({
-            renderer: this.renderer,
             pedantic: false,
             gfm: true,
             breaks: false
@@ -155,6 +59,10 @@ class MarkdownService {
         this.resetState();
         try {
             let html = marked_1.marked.parse(markdown);
+            if (generateTOC) {
+                this.generateTOCFromHTML(html);
+            }
+            this.extractCodeBlocksFromMarkdown(markdown);
             if (sanitize) {
                 html = purify.sanitize(html, {
                     ALLOWED_TAGS: [
@@ -167,26 +75,14 @@ class MarkdownService {
                         'a',
                         'img', 'figure', 'figcaption',
                         'table', 'thead', 'tbody', 'tr', 'th', 'td',
-                        'div', 'span',
-                        'svg', 'path', 'rect',
-                        'button'
+                        'div', 'span'
                     ],
                     ALLOWED_ATTR: [
                         'href', 'title', 'alt', 'src', 'loading',
                         'target', 'rel',
-                        'id', 'class',
-                        'data-code',
-                        'width', 'height', 'viewBox', 'fill', 'stroke', 'stroke-width',
-                        'd'
-                    ],
-                    ALLOW_DATA_ATTR: true
+                        'id', 'class'
+                    ]
                 });
-            }
-            if (options.enableMermaid) {
-                html = this.processMermaidDiagrams(html);
-            }
-            if (options.enableMath) {
-                html = this.processMathExpressions(html);
             }
             return {
                 html,
@@ -199,6 +95,33 @@ class MarkdownService {
         catch (error) {
             console.error('Failed to render markdown:', error);
             throw new Error('Markdown rendering failed');
+        }
+    }
+    generateTOCFromHTML(html) {
+        const headingRegex = /<h([1-6])([^>]*)>(.*?)<\/h[1-6]>/g;
+        let match;
+        while ((match = headingRegex.exec(html)) !== null) {
+            const level = parseInt(match[1]);
+            const title = match[3].replace(/<[^>]*>/g, '');
+            const anchor = (0, slugify_1.default)(title, { lower: true, strict: true });
+            this.tocItems.push({
+                id: `heading-${anchor}`,
+                title,
+                level,
+                anchor
+            });
+        }
+    }
+    extractCodeBlocksFromMarkdown(markdown) {
+        const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+        let match;
+        while ((match = codeBlockRegex.exec(markdown)) !== null) {
+            const language = match[1] || 'text';
+            const code = match[2];
+            this.codeBlocks.push(code);
+            if (language) {
+                this.languages.add(language);
+            }
         }
     }
     processMermaidDiagrams(html) {

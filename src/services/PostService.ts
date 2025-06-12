@@ -1,26 +1,26 @@
-interface PostMetadata {
+export interface PostMetadata {
   title: string;
   slug: string;
   excerpt: string;
   thumbnail?: string;
   metaDescription?: string;
-  keywords: string[];
+  keywords?: string[];
 }
 
-interface PostContent {
+export interface PostContent {
   markdown: string;
   html?: string;
   readingTime?: number;
 }
 
-interface PostClassification {
+export interface PostClassification {
   category: string;
   tags: string[];
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   primaryLanguage?: string;
 }
 
-interface PostStats {
+export interface PostStats {
   viewCount: number;
   likeCount: number;
   commentCount: number;
@@ -35,20 +35,13 @@ export interface Post {
   stats: PostStats;
   authorId: string;
   authorName: string;
-  status: 'draft' | 'published' | 'private';
+  status: 'draft' | 'published' | 'archived';
   createdAt: number;
   updatedAt: number;
   publishedAt?: number;
   featured: boolean;
   allowComments: boolean;
   sortOrder?: number;
-}
-
-export interface PostsResponse {
-  posts: Post[];
-  total: number;
-  limit?: number;
-  offset: number;
 }
 
 export interface TableOfContentsItem {
@@ -58,37 +51,36 @@ export interface TableOfContentsItem {
   anchor: string;
 }
 
-export interface CodeBlock {
-  language: string;
-  code: string;
-  line: number;
+export interface PostsResponse {
+  posts: Post[];
+  total: number;
+  limit?: number;
+  offset: number;
 }
 
-class PostService {
-  private baseUrl: string;
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:2567/api';
 
-  constructor(baseUrl: string = 'http://localhost:2567') {
-    this.baseUrl = baseUrl;
+class PostServiceClient {
+  private static instance: PostServiceClient;
+
+  private constructor() {}
+
+  static getInstance(): PostServiceClient {
+    if (!PostServiceClient.instance) {
+      PostServiceClient.instance = new PostServiceClient();
+    }
+    return PostServiceClient.instance;
   }
 
-  private async fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
-
+  private async fetchJSON<T>(url: string): Promise<T> {
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     return response.json();
   }
 
-  // Get posts with filtering and pagination
-  async getPosts(params?: {
+  async getAllPosts(filters?: {
     status?: string;
     category?: string;
     tag?: string;
@@ -98,81 +90,78 @@ class PostService {
     limit?: number;
     offset?: number;
   }): Promise<PostsResponse> {
-    const searchParams = new URLSearchParams();
-    
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, value.toString());
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) {
+          params.append(key, String(value));
         }
       });
     }
-
-    const queryString = searchParams.toString();
-    const endpoint = `/api/posts${queryString ? `?${queryString}` : ''}`;
     
-    return this.fetchAPI<PostsResponse>(endpoint);
+    const queryString = params.toString();
+    const url = `${API_BASE_URL}/posts${queryString ? `?${queryString}` : ''}`;
+    return this.fetchJSON(url);
   }
 
-  // Get published posts (public endpoint)
+  // Alias for getAllPosts to match useInfiniteScroll expectation
+  async getPosts(filters?: {
+    status?: string;
+    category?: string;
+    tag?: string;
+    featured?: boolean;
+    authorId?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<PostsResponse> {
+    return this.getAllPosts(filters);
+  }
+
   async getPublishedPosts(): Promise<Post[]> {
-    return this.fetchAPI<Post[]>('/api/posts/published');
+    return this.fetchJSON(`${API_BASE_URL}/posts/published`);
   }
 
-  // Get featured posts
   async getFeaturedPosts(): Promise<Post[]> {
-    return this.fetchAPI<Post[]>('/api/posts/featured');
+    return this.fetchJSON(`${API_BASE_URL}/posts/featured`);
   }
 
-  // Get popular posts
-  async getPopularPosts(limit?: number): Promise<Post[]> {
-    const endpoint = `/api/posts/popular${limit ? `?limit=${limit}` : ''}`;
-    return this.fetchAPI<Post[]>(endpoint);
+  async getPopularPosts(limit: number = 10): Promise<Post[]> {
+    return this.fetchJSON(`${API_BASE_URL}/posts/popular?limit=${limit}`);
   }
 
-  // Get recent posts
-  async getRecentPosts(limit?: number): Promise<Post[]> {
-    const endpoint = `/api/posts/recent${limit ? `?limit=${limit}` : ''}`;
-    return this.fetchAPI<Post[]>(endpoint);
+  async getRecentPosts(limit: number = 10): Promise<Post[]> {
+    return this.fetchJSON(`${API_BASE_URL}/posts/recent?limit=${limit}`);
   }
 
-  // Get single post by ID
   async getPost(id: string): Promise<Post> {
-    return this.fetchAPI<Post>(`/api/posts/${id}`);
+    return this.fetchJSON(`${API_BASE_URL}/posts/${id}`);
   }
 
-  // Get post by slug
   async getPostBySlug(slug: string): Promise<Post> {
-    return this.fetchAPI<Post>(`/api/posts/slug/${slug}`);
+    return this.fetchJSON(`${API_BASE_URL}/posts/slug/${slug}`);
   }
 
-  // Get post table of contents
   async getPostTOC(id: string): Promise<TableOfContentsItem[]> {
-    return this.fetchAPI<TableOfContentsItem[]>(`/api/posts/${id}/toc`);
+    return this.fetchJSON(`${API_BASE_URL}/posts/${id}/toc`);
   }
 
-  // Get post code blocks
-  async getPostCodeBlocks(id: string): Promise<CodeBlock[]> {
-    return this.fetchAPI<CodeBlock[]>(`/api/posts/${id}/code-blocks`);
+  async getPostCodeBlocks(id: string): Promise<Array<{ language: string; code: string; line: number }>> {
+    return this.fetchJSON(`${API_BASE_URL}/posts/${id}/code-blocks`);
   }
 
-  // Get related posts
-  async getRelatedPosts(id: string, limit?: number): Promise<Post[]> {
-    const endpoint = `/api/posts/${id}/related${limit ? `?limit=${limit}` : ''}`;
-    return this.fetchAPI<Post[]>(endpoint);
+  async getRelatedPosts(id: string, limit: number = 5): Promise<Post[]> {
+    return this.fetchJSON(`${API_BASE_URL}/posts/${id}/related?limit=${limit}`);
   }
 
-  // Get categories
   async getCategories(): Promise<string[]> {
-    return this.fetchAPI<string[]>('/api/categories');
+    return this.fetchJSON(`${API_BASE_URL}/categories`);
   }
 
-  // Get tags
   async getTags(): Promise<string[]> {
-    return this.fetchAPI<string[]>('/api/tags');
+    return this.fetchJSON(`${API_BASE_URL}/tags`);
   }
 
-  // Get blog statistics
   async getStatistics(): Promise<{
     totalPosts: number;
     publishedPosts: number;
@@ -182,32 +171,8 @@ class PostService {
     categoriesCount: number;
     tagsCount: number;
   }> {
-    return this.fetchAPI('/api/stats');
-  }
-
-  // Create new post
-  async createPost(postData: any): Promise<Post> {
-    return this.fetchAPI<Post>('/api/posts', {
-      method: 'POST',
-      body: JSON.stringify(postData),
-    });
-  }
-
-  // Update post
-  async updatePost(id: string, postData: any): Promise<Post> {
-    return this.fetchAPI<Post>(`/api/posts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(postData),
-    });
-  }
-
-  // Delete post
-  async deletePost(id: string): Promise<{ message: string }> {
-    return this.fetchAPI<{ message: string }>(`/api/posts/${id}`, {
-      method: 'DELETE',
-    });
+    return this.fetchJSON(`${API_BASE_URL}/stats`);
   }
 }
 
-export const postService = new PostService();
-export default PostService;
+export const postService = PostServiceClient.getInstance();
