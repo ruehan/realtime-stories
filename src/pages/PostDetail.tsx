@@ -40,7 +40,32 @@ const PostDetail: React.FC = () => {
         }
       });
     }
-  }, [currentSection]);
+    
+    // Auto-scroll TOC to active item
+    if (currentSection && toc.length > 0) {
+      const tocNav = document.querySelector('.toc-scroll-to-active');
+      if (tocNav) {
+        // Find the active TOC button
+        const activeButtons = Array.from(tocNav.querySelectorAll('button')).filter(button => {
+          return button.textContent?.trim() === currentSection;
+        });
+        
+        if (activeButtons.length > 0) {
+          const activeButton = activeButtons[0];
+          // Scroll the TOC container to center the active item
+          const tocRect = tocNav.getBoundingClientRect();
+          const buttonRect = activeButton.getBoundingClientRect();
+          const scrollTop = tocNav.scrollTop;
+          const targetScrollTop = scrollTop + (buttonRect.top - tocRect.top) - (tocRect.height / 2) + (buttonRect.height / 2);
+          
+          tocNav.scrollTo({
+            top: Math.max(0, targetScrollTop),
+            behavior: 'smooth'
+          });
+        }
+      }
+    }
+  }, [currentSection, toc]);
 
   // Load post data
   useEffect(() => {
@@ -384,9 +409,11 @@ const PostDetail: React.FC = () => {
             {toc.length > 0 && (
               <div className="lg:col-span-1">
                 <div className="sticky top-24">
-                  <div className="bg-white rounded-xl shadow-lg p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">목차</h3>
-                    <nav className="space-y-1">
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div className="p-6 border-b border-gray-100">
+                      <h3 className="text-lg font-semibold text-gray-800">목차</h3>
+                    </div>
+                    <nav className="max-h-[32rem] overflow-y-auto overflow-x-hidden p-6 pt-4 space-y-1 toc-scrollbar toc-scroll-to-active">
                       {toc.map((item, index) => {
                         // Check if this TOC item matches the current section from reading progress
                         const isActive = currentSection === item.title;
@@ -400,7 +427,7 @@ const PostDetail: React.FC = () => {
                               scrollToSection(item.title);
                             }}
                             className={`
-                              block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 relative
+                              block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 relative toc-item-active
                               ${isActive 
                                 ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500' 
                                 : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
