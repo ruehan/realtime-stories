@@ -45,6 +45,15 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions = {}): UseIn
     setError(null);
 
     try {
+      console.log('🔄 Fetching posts with params:', {
+        status: 'published',
+        category,
+        tag,
+        search,
+        limit,
+        offset
+      });
+      
       const response = await postService.getPosts({
         status: 'published',
         category,
@@ -54,27 +63,37 @@ export const useInfiniteScroll = (options: UseInfiniteScrollOptions = {}): UseIn
         offset
       });
 
+      console.log('📥 Response received:', response);
       const newPosts = response.posts;
+      console.log('📋 New posts:', newPosts);
 
       if (newPosts.length === 0) {
+        console.log('⚠️ No new posts found');
         setHasMore(false);
       } else {
         setPosts(prev => {
           // Avoid duplicates
           const existingIds = new Set(prev.map(post => post.id));
           const uniqueNewPosts = newPosts.filter((post: Post) => !existingIds.has(post.id));
+          console.log(`✅ Adding ${uniqueNewPosts.length} unique posts (filtered ${newPosts.length - uniqueNewPosts.length} duplicates)`);
           return [...prev, ...uniqueNewPosts];
         });
         setOffset(prev => prev + newPosts.length);
         
         // Check if we've loaded all available posts
         if (newPosts.length < limit) {
+          console.log('📭 Reached end of posts');
           setHasMore(false);
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load posts');
-      console.error('Failed to load posts:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
+      console.error('❌ Failed to load posts:', err);
+      console.error('Error details:', {
+        message: errorMessage,
+        stack: err instanceof Error ? err.stack : undefined
+      });
+      setError(errorMessage);
     } finally {
       setLoading(false);
       loadingRef.current = false;

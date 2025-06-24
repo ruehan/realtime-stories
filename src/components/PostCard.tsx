@@ -1,6 +1,5 @@
 import React from 'react';
 import { Post } from '../services/PostService';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface PostCardProps {
   post: Post;
@@ -8,13 +7,7 @@ interface PostCardProps {
   onClick?: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }) => {
-  const { ref, isVisible } = useScrollAnimation({
-    threshold: 0.2,
-    delay: animationDelay,
-    triggerOnce: true
-  });
-
+const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -23,31 +16,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }
     });
   };
 
-  const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'bg-green-100 text-green-800';
-      case 'intermediate':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'advanced':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
     <article
-      ref={ref}
-      className={`
-        group bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200
-        hover:shadow-xl hover:border-blue-300 transition-all duration-500 cursor-pointer
-        transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}
-      `}
+      className="group bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all duration-500 cursor-pointer"
       onClick={onClick}
-      style={{
-        transition: 'transform 0.6s ease-out, opacity 0.6s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out'
-      }}
     >
       {/* Thumbnail */}
       {post.metadata.thumbnail && (
@@ -65,28 +38,28 @@ const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }
       <div className="p-6">
         {/* Categories and Tags */}
         <div className="flex flex-wrap gap-2 mb-3">
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+          <span className="px-3 py-1 text-sm font-medium rounded-full" style={{ backgroundColor: '#DBEAFE', color: '#1E40AF' }}>
             {post.classification.category}
           </span>
           {post.classification.difficulty && (
-            <span className={`px-3 py-1 text-sm font-medium rounded-full ${getDifficultyColor(post.classification.difficulty)}`}>
+            <span className="px-3 py-1 text-sm font-medium rounded-full" style={{ backgroundColor: '#F3F4F6', color: '#374151' }}>
               {post.classification.difficulty}
             </span>
           )}
           {post.classification.primaryLanguage && (
-            <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+            <span className="px-3 py-1 text-sm font-medium rounded-full" style={{ backgroundColor: '#F3E8FF', color: '#6B21A8' }}>
               {post.classification.primaryLanguage}
             </span>
           )}
         </div>
 
         {/* Title */}
-        <h2 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300 line-clamp-2">
+        <h2 className="text-xl font-bold mb-3 transition-colors" style={{ color: '#111827', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {post.metadata.title}
         </h2>
 
         {/* Excerpt */}
-        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+        <p className="mb-4 leading-relaxed" style={{ color: '#4b5563', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
           {post.metadata.excerpt}
         </p>
 
@@ -96,13 +69,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }
             {post.classification.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md hover:bg-gray-200 transition-colors duration-200"
+                className="px-2 py-1 text-xs rounded-md transition-colors duration-200" style={{ backgroundColor: '#F3F4F6', color: '#374151' }}
               >
                 #{tag}
               </span>
             ))}
             {post.classification.tags.length > 3 && (
-              <span className="px-2 py-1 text-gray-500 text-xs">
+              <span className="px-2 py-1 text-xs" style={{ color: '#6B7280' }}>
                 +{post.classification.tags.length - 3} more
               </span>
             )}
@@ -136,8 +109,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }
           </div>
           
           <div className="text-right">
-            <p className="font-medium text-gray-700">{post.authorName}</p>
-            <p>{formatDate(post.publishedAt || post.createdAt)}</p>
+            <p className="font-medium" style={{ color: '#374151' }}>
+              {post.authorName}
+            </p>
+            <p>
+              {formatDate(post.publishedAt || post.createdAt)}
+            </p>
           </div>
         </div>
 

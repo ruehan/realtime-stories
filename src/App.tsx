@@ -8,6 +8,7 @@ import ErrorNotification from './components/ErrorNotification';
 import Home from './pages/Home';
 import Posts from './pages/Posts';
 import PostDetail from './pages/PostDetail';
+import PostDetailSimple from './pages/PostDetailSimple';
 import Categories from './pages/Categories';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';

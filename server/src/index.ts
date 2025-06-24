@@ -77,16 +77,25 @@ const postService = PostService.getInstance();
 // Get all posts with filtering
 app.get('/api/posts', async (req, res) => {
   try {
+    console.log('🌐 API /api/posts called with query:', req.query);
     const { status, category, tag, featured, authorId, search, limit, offset } = req.query;
     
     let posts;
     if (search) {
+      console.log('🔍 Searching posts with query:', search);
       posts = await postService.searchPosts(search as string, {
         status: status as string,
         category: category as string,
         tag: tag as string
       });
     } else {
+      console.log('📋 Getting all posts with filters:', {
+        status: status as string,
+        category: category as string,
+        tag: tag as string,
+        featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
+        authorId: authorId as string
+      });
       posts = await postService.getAllPosts({
         status: status as string,
         category: category as string,
@@ -96,6 +105,8 @@ app.get('/api/posts', async (req, res) => {
       });
     }
 
+    console.log(`📊 Total posts found: ${posts.length}`);
+
     // Apply pagination
     const limitNum = limit ? parseInt(limit as string) : undefined;
     const offsetNum = offset ? parseInt(offset as string) : 0;
@@ -103,16 +114,20 @@ app.get('/api/posts', async (req, res) => {
     
     if (limitNum) {
       posts = posts.slice(offsetNum, offsetNum + limitNum);
+      console.log(`📄 Paginated: returning ${posts.length} posts (offset: ${offsetNum}, limit: ${limitNum})`);
     }
 
-    res.json({
+    const response = {
       posts,
       total: totalPosts,
       limit: limitNum,
       offset: offsetNum
-    });
+    };
+    
+    console.log('📤 Sending response with', posts.length, 'posts');
+    res.json(response);
   } catch (error) {
-    console.error('Failed to get posts:', error);
+    console.error('❌ Failed to get posts:', error);
     res.status(500).json({ error: 'Failed to retrieve posts' });
   }
 });

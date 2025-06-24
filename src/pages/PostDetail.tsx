@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Post, postService, TableOfContentsItem } from '../services/PostService';
-import { useReadingProgress } from '../hooks/useReadingProgress';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
-import { useMouseInteraction } from '../hooks/useMouseInteraction';
 import ReadingProgress, { FloatingReadingStats } from '../components/ReadingProgress';
-import HighlightAnimation, { 
-  ImportantText, 
-  CodeHighlight, 
-  QuoteHighlight, 
-  LinkHighlight 
-} from '../components/HighlightAnimation';
+import HighlightAnimation from '../components/HighlightAnimation';
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -21,31 +13,6 @@ const PostDetail: React.FC = () => {
   const [toc, setToc] = useState<TableOfContentsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Mouse interaction for hero section
-  const { ref: heroRef, getTransform } = useMouseInteraction({
-    enableHover: true,
-    enableMove: true,
-    sensitivity: 0.3,
-    magnetism: 0.2
-  });
-
-  // Scroll animations for different sections
-  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({
-    threshold: 0.3,
-    triggerOnce: true
-  });
-
-  const { ref: contentRef, isVisible: contentVisible } = useScrollAnimation({
-    threshold: 0.1,
-    triggerOnce: true,
-    delay: 200
-  });
-
-  // Cast refs to proper types
-  const heroRefDiv = heroRef as React.RefObject<HTMLDivElement>;
-  const headerRefDiv = headerRef as React.RefObject<HTMLDivElement>;
-  const contentRefArticle = contentRef as React.RefObject<HTMLElement>;
 
   // Load post data
   useEffect(() => {
@@ -113,10 +80,24 @@ const PostDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">포스트를 불러오는 중...</p>
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb',
+        padding: '20px'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            backgroundColor: 'blue',
+            color: 'white',
+            padding: '20px',
+            borderRadius: '10px',
+            fontSize: '18px'
+          }}>
+            📖 포스트를 불러오는 중...
+          </div>
         </div>
       </div>
     );
@@ -124,14 +105,37 @@ const PostDetail: React.FC = () => {
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">포스트를 찾을 수 없습니다</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#f9fafb',
+        padding: '20px'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            fontSize: '18px',
+            marginBottom: '20px'
+          }}>
+            😕 포스트를 찾을 수 없습니다<br/>
+            {error}
+          </div>
           <button
             onClick={() => navigate('/posts')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+            style={{
+              padding: '15px 30px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              cursor: 'pointer'
+            }}
           >
             포스트 목록으로 돌아가기
           </button>
@@ -157,9 +161,7 @@ const PostDetail: React.FC = () => {
 
       {/* Hero Section */}
       <div 
-        ref={heroRefDiv}
         className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white overflow-hidden"
-        style={{ transform: getTransform({ enableTilt: true, tiltStrength: 5 }) }}
       >
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 py-16">
@@ -178,12 +180,7 @@ const PostDetail: React.FC = () => {
             </div>
 
             {/* Post Meta */}
-            <div 
-              ref={headerRefDiv}
-              className={`transition-all duration-800 ${
-                headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-            >
+            <div>
               <div className="flex flex-wrap justify-center gap-2 mb-6">
                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
                   {post.classification.category}
@@ -324,29 +321,13 @@ const PostDetail: React.FC = () => {
             {/* Article Content */}
             <div className={`${toc.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
               <article 
-                ref={contentRefArticle}
-                className={`
-                  bg-white rounded-xl shadow-lg overflow-hidden
-                  transition-all duration-800 reading-content
-                  ${contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}
-                `}
+                className="bg-white rounded-xl shadow-lg overflow-hidden reading-content"
               >
                 <div className="p-8 md:p-12">
-                  {/* Debug: Show HTML content */}
-                  <div className="mb-4 p-4 bg-yellow-100 text-sm">
-                    <strong>Debug - HTML length:</strong> {post.content.html?.length || 0}
-                    <br />
-                    <strong>HTML preview:</strong> {post.content.html?.substring(0, 100) || 'No HTML content'}...
-                  </div>
-                  
-                  {/* Render HTML content with basic styling */}
+                  {/* Render HTML content */}
                   <div 
                     className="content-area"
-                    style={{
-                      lineHeight: '1.6',
-                      color: '#374151'
-                    }}
-                    dangerouslySetInnerHTML={{ __html: post.content.html || '' }}
+                    dangerouslySetInnerHTML={{ __html: post.content.html || '<p>콘텐츠를 불러올 수 없습니다.</p>' }}
                   />
                 </div>
               </article>

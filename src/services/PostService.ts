@@ -73,11 +73,17 @@ class PostServiceClient {
   }
 
   private async fetchJSON<T>(url: string): Promise<T> {
+    console.log('🌐 Fetching:', url);
     const response = await fetch(url);
+    console.log('📡 Response status:', response.status);
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Error response:', errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return response.json();
+    const data = await response.json();
+    console.log('📦 Response data:', data);
+    return data;
   }
 
   async getAllPosts(filters?: {

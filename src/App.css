@@ -109,3 +109,33 @@
   font-style: italic;
   color: #6b7280;
 }
+
+/* PostCard 강제 스타일 */
+.post-card-title {
+  color: #111827 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.75rem !important;
+  line-height: 1.75rem !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.post-card-excerpt {
+  color: #4B5563 !important;
+  margin-bottom: 1rem !important;
+  line-height: 1.625 !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.post-card-category {
+  background-color: #DBEAFE !important;
+  color: #1E40AF !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 9999px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+}

@@ -36,6 +36,7 @@ const Posts: React.FC = () => {
     search: searchQuery || undefined
   }) as any;
   
+  
   // Auto-join posts room on mount
   useEffect(() => {
     let mounted = true;
@@ -109,10 +110,10 @@ const Posts: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-5xl font-bold mb-4" style={{ color: '#111827' }}>
               Development Blog
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl max-w-2xl mx-auto" style={{ color: '#4B5563' }}>
               Technical articles, insights, and tutorials on modern web development
             </p>
           </div>
@@ -173,9 +174,10 @@ const Posts: React.FC = () => {
                 </div>
               )}
 
+
               {/* Posts Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {posts.map((post: Post, index: number) => (
+                {posts?.map((post: Post, index: number) => (
                   <PostCard
                     key={post.id}
                     post={post}

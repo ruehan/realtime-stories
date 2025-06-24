@@ -73,7 +73,7 @@ export interface IPost {
     stats: IPostStats;
     authorId: string;
     authorName: string;
-    status: 'draft' | 'published' | 'private';
+    status: 'draft' | 'published' | 'archived';
     createdAt: number;
     updatedAt: number;
     publishedAt?: number;

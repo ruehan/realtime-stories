@@ -1,7 +1,8 @@
 import { IPost, ICreatePostInput, IUpdatePostInput } from '../schemas/Post';
 export declare class PostService {
     private static instance;
-    private dataPath;
+    private postsDirectory;
+    private fileExtension;
     private posts;
     private initialized;
     private markdownService;
@@ -11,8 +12,9 @@ export declare class PostService {
     private generateId;
     private calculateReadingTime;
     initialize(): Promise<void>;
-    private createSamplePosts;
-    private savePosts;
+    private loadPostsFromFiles;
+    private createPostFromFrontmatter;
+    private generateIdFromFilename;
     createPost(input: ICreatePostInput): Promise<IPost>;
     updatePost(id: string, input: IUpdatePostInput): Promise<IPost | null>;
     getPost(id: string): Promise<IPost | null>;
@@ -58,4 +60,5 @@ export declare class PostService {
         categoriesCount: number;
         tagsCount: number;
     }>;
+    migrateFromJsonToMarkdown(): Promise<void>;
 }

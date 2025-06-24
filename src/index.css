@@ -9,9 +9,25 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f9fafb;
+  color: #111827;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Ensure text is visible */
+* {
+  color: inherit;
+}
+
+/* Force text color for specific elements */
+h1, h2, h3, h4, h5, h6 {
+  color: #111827;
+}
+
+p {
+  color: #4b5563;
 }

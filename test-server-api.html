@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Server API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .result {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Server API</h1>
+    
+    <button onclick="testHealth()">Test Health</button>
+    <button onclick="testPosts()">Test Posts API</button>
+    <button onclick="testRoomStats()">Test Room Stats</button>
+    
+    <div id="result" class="result"></div>
+
+    <script>
+        const resultDiv = document.getElementById('result');
+        
+        function showResult(title, data, isError = false) {
+            resultDiv.innerHTML = `
+                <h2 class="${isError ? 'error' : 'success'}">${title}</h2>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+        
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:2567/health');
+                const data = await response.json();
+                showResult('Health Check Success', data);
+            } catch (error) {
+                showResult('Health Check Failed', error.message, true);
+            }
+        }
+        
+        async function testPosts() {
+            try {
+                console.log('Testing posts API...');
+                const response = await fetch('http://localhost:2567/api/posts?status=published&limit=10');
+                const data = await response.json();
+                console.log('Posts API response:', data);
+                showResult('Posts API Success', data);
+            } catch (error) {
+                console.error('Posts API error:', error);
+                showResult('Posts API Failed', error.message, true);
+            }
+        }
+        
+        async function testRoomStats() {
+            try {
+                const response = await fetch('http://localhost:2567/api/room-stats');
+                const data = await response.json();
+                showResult('Room Stats Success', data);
+            } catch (error) {
+                showResult('Room Stats Failed', error.message, true);
+            }
+        }
+        
+        // Auto-test posts on load
+        window.onload = () => {
+            testPosts();
+        };
+    </script>
+</body>
+</html>

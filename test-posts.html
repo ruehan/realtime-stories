@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Posts API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .loading { background-color: #cce5ff; color: #004085; }
+        .post {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .post h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .category {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Posts API</h1>
+        <div id="status" class="status loading">Loading posts...</div>
+        <div id="debug"></div>
+        <div id="posts"></div>
+    </div>
+
+    <script>
+        async function fetchPosts() {
+            const statusEl = document.getElementById('status');
+            const postsEl = document.getElementById('posts');
+            const debugEl = document.getElementById('debug');
+            
+            try {
+                const url = 'http://localhost:2567/api/posts?status=published';
+                debugEl.innerHTML = `<pre>Fetching: ${url}</pre>`;
+                
+                const response = await fetch(url);
+                debugEl.innerHTML += `<pre>Response Status: ${response.status}</pre>`;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                debugEl.innerHTML += `<pre>Response Data:\n${JSON.stringify(data, null, 2)}</pre>`;
+                
+                if (data.posts && data.posts.length > 0) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = `Loaded ${data.posts.length} posts successfully!`;
+                    
+                    postsEl.innerHTML = data.posts.map(post => `
+                        <div class="post">
+                            <span class="category">${post.classification.category}</span>
+                            <h3>${post.metadata.title}</h3>
+                            <p>${post.metadata.excerpt}</p>
+                            <div class="post-meta">
+                                By ${post.authorName} • 
+                                ${new Date(post.createdAt).toLocaleDateString()} • 
+                                ${post.content.readingTime} min read
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = 'No posts found';
+                    postsEl.innerHTML = '<p>No posts to display</p>';
+                }
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `Error: ${error.message}`;
+                debugEl.innerHTML += `<pre style="color: red;">Error: ${error.stack}</pre>`;
+                console.error('Error fetching posts:', error);
+            }
+        }
+        
+        // Fetch posts on page load
+        fetchPosts();
+        
+        // Refresh every 10 seconds for testing
+        setInterval(fetchPosts, 10000);
+    </script>
+</body>
+</html>

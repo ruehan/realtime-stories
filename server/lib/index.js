@@ -56,9 +56,11 @@ const postService = PostService_1.PostService.getInstance();
 })();
 app.get('/api/posts', async (req, res) => {
     try {
+        console.log('🌐 API /api/posts called with query:', req.query);
         const { status, category, tag, featured, authorId, search, limit, offset } = req.query;
         let posts;
         if (search) {
+            console.log('🔍 Searching posts with query:', search);
             posts = await postService.searchPosts(search, {
                 status: status,
                 category: category,
@@ -66,6 +68,13 @@ app.get('/api/posts', async (req, res) => {
             });
         }
         else {
+            console.log('📋 Getting all posts with filters:', {
+                status: status,
+                category: category,
+                tag: tag,
+                featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
+                authorId: authorId
+            });
             posts = await postService.getAllPosts({
                 status: status,
                 category: category,
@@ -74,21 +83,25 @@ app.get('/api/posts', async (req, res) => {
                 authorId: authorId
             });
         }
+        console.log(`📊 Total posts found: ${posts.length}`);
         const limitNum = limit ? parseInt(limit) : undefined;
         const offsetNum = offset ? parseInt(offset) : 0;
         const totalPosts = posts.length;
         if (limitNum) {
             posts = posts.slice(offsetNum, offsetNum + limitNum);
+            console.log(`📄 Paginated: returning ${posts.length} posts (offset: ${offsetNum}, limit: ${limitNum})`);
         }
-        res.json({
+        const response = {
             posts,
             total: totalPosts,
             limit: limitNum,
             offset: offsetNum
-        });
+        };
+        console.log('📤 Sending response with', posts.length, 'posts');
+        res.json(response);
     }
     catch (error) {
-        console.error('Failed to get posts:', error);
+        console.error('❌ Failed to get posts:', error);
         res.status(500).json({ error: 'Failed to retrieve posts' });
     }
 });

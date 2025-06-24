@@ -38,7 +38,7 @@ export class Post extends Schema {
   
   @type('string') authorId!: string;
   @type('string') authorName!: string;
-  @type('string') status!: string; // 'draft' | 'published' | 'private'
+  @type('string') status!: string; // 'draft' | 'published' | 'archived'
   
   @type('number') createdAt!: number;
   @type('number') updatedAt!: number;
@@ -87,7 +87,7 @@ export interface IPost {
   stats: IPostStats;
   authorId: string;
   authorName: string;
-  status: 'draft' | 'published' | 'private';
+  status: 'draft' | 'published' | 'archived';
   createdAt: number;
   updatedAt: number;
   publishedAt?: number;
