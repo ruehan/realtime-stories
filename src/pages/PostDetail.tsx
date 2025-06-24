@@ -5,6 +5,7 @@ import ReadingProgress, { FloatingReadingStats } from '../components/ReadingProg
 import HighlightAnimation from '../components/HighlightAnimation';
 import SmoothTransition from '../components/SmoothTransition';
 import ParallaxSection from '../components/ParallaxSection';
+import { useReadingProgress } from '../hooks/useReadingProgress';
 import '../styles/immersive-content.css';
 
 const PostDetail: React.FC = () => {
@@ -16,6 +17,30 @@ const PostDetail: React.FC = () => {
   const [toc, setToc] = useState<TableOfContentsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Use the existing reading progress hook for current section tracking
+  const { currentSection } = useReadingProgress({ 
+    contentSelector: '.reading-content',
+    sectionSelector: '.content-area h1, .content-area h2, .content-area h3, .content-area h4, .content-area h5, .content-area h6'
+  });
+
+  // Debug current section and apply active class
+  useEffect(() => {
+    console.log('Current section from useReadingProgress:', currentSection);
+    
+    // Remove active class from all headings
+    const allHeadings = document.querySelectorAll('.content-area h1, .content-area h2, .content-area h3, .content-area h4, .content-area h5, .content-area h6');
+    allHeadings.forEach(heading => heading.classList.remove('active-section'));
+    
+    // Add active class to current section
+    if (currentSection) {
+      Array.from(allHeadings).forEach(heading => {
+        if (heading.textContent?.trim() === currentSection) {
+          heading.classList.add('active-section');
+        }
+      });
+    }
+  }, [currentSection]);
 
   // Load post data
   useEffect(() => {
@@ -36,6 +61,7 @@ const PostDetail: React.FC = () => {
 
         // Load table of contents
         const tocData = await postService.getPostTOC(postData.id);
+        console.log('TOC data loaded:', tocData);
         setToc(tocData);
 
         // Load related posts
@@ -52,6 +78,37 @@ const PostDetail: React.FC = () => {
 
     loadPost();
   }, [slug]);
+
+  // Add click events to headings after content is loaded
+  useEffect(() => {
+    if (!post?.content.html) return;
+
+    const timer = setTimeout(() => {
+      const headings = document.querySelectorAll('.content-area h1, .content-area h2, .content-area h3, .content-area h4, .content-area h5, .content-area h6');
+      
+      Array.from(headings).forEach((heading) => {
+        // Remove existing click listeners
+        heading.removeEventListener('click', handleHeadingClick);
+        
+        // Add click listener
+        heading.addEventListener('click', handleHeadingClick);
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [post?.content.html]);
+
+  // Handle heading click in content
+  const handleHeadingClick = (event: Event) => {
+    const heading = event.target as HTMLElement;
+    if (heading) {
+      // Scroll the heading to the top with proper offset
+      const yOffset = 100; // Distance from top
+      const targetY = heading.getBoundingClientRect().top + window.pageYOffset - yOffset;
+      
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('ko-KR', {
@@ -74,10 +131,41 @@ const PostDetail: React.FC = () => {
     }
   };
 
-  const scrollToSection = (anchor: string) => {
-    const element = document.getElementById(`heading-${anchor}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Simple scroll to section function
+  const scrollToSection = (sectionTitle: string) => {
+    console.log(`Scrolling to section: "${sectionTitle}"`);
+    
+    // Find heading by text content
+    const headings = document.querySelectorAll('.content-area h1, .content-area h2, .content-area h3, .content-area h4, .content-area h5, .content-area h6');
+    console.log('Available headings:', Array.from(headings).map(h => `"${h.textContent?.trim()}"`));
+    
+    let found = false;
+    Array.from(headings).forEach((heading) => {
+      const headingText = heading.textContent?.trim();
+      if (headingText === sectionTitle) {
+        console.log(`Found matching heading: "${headingText}"`);
+        
+        // Get current scroll position
+        const currentScrollY = window.pageYOffset;
+        console.log(`Current scroll: ${currentScrollY}`);
+        
+        // Calculate target position
+        const headingRect = heading.getBoundingClientRect();
+        const headingTop = headingRect.top + window.pageYOffset;
+        console.log(`Heading position: ${headingTop}`);
+        
+        const yOffset = 100; // Distance from top of viewport
+        const targetY = headingTop - yOffset;
+        console.log(`Target scroll position: ${targetY}`);
+        
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+        found = true;
+        return;
+      }
+    });
+    
+    if (!found) {
+      console.log(`No matching heading found for: "${sectionTitle}"`);
     }
   };
 
@@ -299,21 +387,33 @@ const PostDetail: React.FC = () => {
                   <div className="bg-white rounded-xl shadow-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">목차</h3>
                     <nav className="space-y-1">
-                      {toc.map((item, index) => (
-                        <button
-                          key={item.id}
-                          onClick={() => scrollToSection(item.anchor)}
-                          className={`
-                            block w-full text-left px-3 py-2 rounded-lg transition-colors duration-200
-                            hover:bg-blue-50 hover:text-blue-600
-                            ${item.level === 1 ? 'font-semibold text-gray-800' : ''}
-                            ${item.level === 2 ? 'ml-4 text-gray-700' : ''}
-                            ${item.level >= 3 ? 'ml-8 text-gray-600 text-sm' : ''}
-                          `}
-                        >
-                          {item.title}
-                        </button>
-                      ))}
+                      {toc.map((item, index) => {
+                        // Check if this TOC item matches the current section from reading progress
+                        const isActive = currentSection === item.title;
+                        
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              console.log(`TOC Click - Title: "${item.title}", Level: ${item.level}, Anchor: "${item.anchor}"`);
+                              console.log(`Current section: "${currentSection}"`);
+                              scrollToSection(item.title);
+                            }}
+                            className={`
+                              block w-full text-left px-3 py-2 rounded-lg transition-all duration-200 relative
+                              ${isActive 
+                                ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500' 
+                                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
+                              }
+                              ${item.level === 1 ? 'font-semibold' : ''}
+                              ${item.level === 2 ? 'ml-4' : ''}
+                              ${item.level >= 3 ? 'ml-8 text-sm' : ''}
+                            `}
+                          >
+                            {item.title}
+                          </button>
+                        );
+                      })}
                     </nav>
                   </div>
                 </div>
@@ -322,19 +422,17 @@ const PostDetail: React.FC = () => {
 
             {/* Article Content */}
             <div className={`${toc.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-              <SmoothTransition type="slide" direction="up" duration={800} delay={200}>
-                <article 
-                  className="bg-white rounded-xl shadow-lg overflow-hidden reading-content"
-                >
-                <div className="p-8 md:p-12">
-                  {/* Render HTML content */}
-                  <div 
-                    className="content-area"
-                    dangerouslySetInnerHTML={{ __html: post.content.html || '<p>콘텐츠를 불러올 수 없습니다.</p>' }}
-                  />
-                </div>
-                </article>
-              </SmoothTransition>
+              <article 
+                className="bg-white rounded-xl shadow-lg overflow-hidden reading-content"
+              >
+              <div className="p-8 md:p-12">
+                {/* Render HTML content */}
+                <div 
+                  className="content-area"
+                  dangerouslySetInnerHTML={{ __html: post.content.html || '<p>콘텐츠를 불러올 수 없습니다.</p>' }}
+                />
+              </div>
+              </article>
 
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
