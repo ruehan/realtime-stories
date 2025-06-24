@@ -13,6 +13,8 @@ import Categories from './pages/Categories';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import WorkExperience from './pages/WorkExperience';
+import ImmersiveReadingDemo from './pages/ImmersiveReadingDemo';
+import SimpleDemo from './pages/SimpleDemo';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -33,6 +35,8 @@ const AppContent: React.FC = () => {
           <Route path="/about" element={<About />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/work-experience" element={<WorkExperience />} />
+          <Route path="/immersive-demo" element={<ImmersiveReadingDemo />} />
+          <Route path="/simple-demo" element={<SimpleDemo />} />
         </Routes>
       </main>
       <ErrorNotification error={lastError} onClose={clearLastError} />

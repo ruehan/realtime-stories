@@ -1,5 +1,6 @@
 import React from 'react';
 import { Post } from '../services/PostService';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 interface PostCardProps {
   post: Post;
@@ -7,7 +8,12 @@ interface PostCardProps {
   onClick?: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, animationDelay = 0, onClick }) => {
+  const { ref, isVisible, progress } = useScrollAnimation({
+    threshold: 0.1,
+    triggerOnce: true,
+    delay: animationDelay
+  });
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -19,7 +25,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
 
   return (
     <article
-      className="group bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all duration-500 cursor-pointer"
+      ref={ref as React.RefObject<HTMLElement>}
+      className={`group bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      style={{
+        transitionDuration: '700ms',
+        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(32px)'
+      }}
       onClick={onClick}
     >
       {/* Thumbnail */}

@@ -46,6 +46,12 @@ const Navigation: React.FC = () => {
             >
               About
             </Link>
+            <Link
+              to="/simple-demo"
+              className="text-blue-600 hover:text-blue-800 transition-colors font-semibold"
+            >
+              🎭 Demo
+            </Link>
           </div>
         </div>
       </div>

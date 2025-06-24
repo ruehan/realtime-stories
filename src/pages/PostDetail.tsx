@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Post, postService, TableOfContentsItem } from '../services/PostService';
 import ReadingProgress, { FloatingReadingStats } from '../components/ReadingProgress';
 import HighlightAnimation from '../components/HighlightAnimation';
+import SmoothTransition from '../components/SmoothTransition';
+import ParallaxSection from '../components/ParallaxSection';
+import '../styles/immersive-content.css';
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -77,6 +80,7 @@ const PostDetail: React.FC = () => {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
 
   if (loading) {
     return (
@@ -160,10 +164,14 @@ const PostDetail: React.FC = () => {
       />
 
       {/* Hero Section */}
-      <div 
-        className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white overflow-hidden"
+      <ParallaxSection
+        className="relative text-white"
+        backgroundImage={post.metadata.thumbnail}
+        overlay={true}
+        overlayColor="#1e40af"
+        overlayOpacity={0.8}
+        speed={0.5}
       >
-        <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             {/* Back Button */}
@@ -277,40 +285,34 @@ const PostDetail: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </ParallaxSection>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="relative">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Table of Contents - Sidebar */}
             {toc.length > 0 && (
               <div className="lg:col-span-1">
                 <div className="sticky top-24">
                   <div className="bg-white rounded-xl shadow-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">목차</h3>
-                    <nav className="space-y-2">
+                    <nav className="space-y-1">
                       {toc.map((item, index) => (
-                        <HighlightAnimation
+                        <button
                           key={item.id}
-                          type="underline"
-                          color="#3b82f6"
-                          trigger="hover"
-                          delay={index * 50}
+                          onClick={() => scrollToSection(item.anchor)}
+                          className={`
+                            block w-full text-left px-3 py-2 rounded-lg transition-colors duration-200
+                            hover:bg-blue-50 hover:text-blue-600
+                            ${item.level === 1 ? 'font-semibold text-gray-800' : ''}
+                            ${item.level === 2 ? 'ml-4 text-gray-700' : ''}
+                            ${item.level >= 3 ? 'ml-8 text-gray-600 text-sm' : ''}
+                          `}
                         >
-                          <button
-                            onClick={() => scrollToSection(item.anchor)}
-                            className={`
-                              block w-full text-left px-3 py-2 rounded-lg transition-colors duration-200
-                              hover:bg-blue-50 hover:text-blue-600
-                              ${item.level === 1 ? 'font-semibold text-gray-800' : ''}
-                              ${item.level === 2 ? 'ml-4 text-gray-700' : ''}
-                              ${item.level >= 3 ? 'ml-8 text-gray-600 text-sm' : ''}
-                            `}
-                          >
-                            {item.title}
-                          </button>
-                        </HighlightAnimation>
+                          {item.title}
+                        </button>
                       ))}
                     </nav>
                   </div>
@@ -320,9 +322,10 @@ const PostDetail: React.FC = () => {
 
             {/* Article Content */}
             <div className={`${toc.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}`}>
-              <article 
-                className="bg-white rounded-xl shadow-lg overflow-hidden reading-content"
-              >
+              <SmoothTransition type="slide" direction="up" duration={800} delay={200}>
+                <article 
+                  className="bg-white rounded-xl shadow-lg overflow-hidden reading-content"
+                >
                 <div className="p-8 md:p-12">
                   {/* Render HTML content */}
                   <div 
@@ -330,11 +333,13 @@ const PostDetail: React.FC = () => {
                     dangerouslySetInnerHTML={{ __html: post.content.html || '<p>콘텐츠를 불러올 수 없습니다.</p>' }}
                   />
                 </div>
-              </article>
+                </article>
+              </SmoothTransition>
 
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
-                <div className="mt-12">
+                <SmoothTransition type="fade" duration={1000} delay={400}>
+                  <div className="mt-12">
                   <HighlightAnimation
                     type="background"
                     color="#f3f4f6"
@@ -370,8 +375,10 @@ const PostDetail: React.FC = () => {
                       </HighlightAnimation>
                     ))}
                   </div>
-                </div>
+                  </div>
+                </SmoothTransition>
               )}
+            </div>
             </div>
           </div>
         </div>

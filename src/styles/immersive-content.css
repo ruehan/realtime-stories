@@ -1,0 +1,216 @@
+/* 몰입형 콘텐츠 스타일 */
+.content-area {
+  line-height: 1.8;
+}
+
+/* 이미지에 자동 인터랙티브 효과 */
+.content-area img {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.content-area img:hover {
+  transform: scale(1.02) translateY(-4px);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.15);
+}
+
+/* 코드 블록 스타일링 */
+.content-area pre {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.content-area pre:hover {
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+}
+
+.content-area pre::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.content-area pre:hover::before {
+  opacity: 1;
+}
+
+/* 제목에 자동 앵커 링크 스타일 */
+.content-area h1,
+.content-area h2,
+.content-area h3,
+.content-area h4,
+.content-area h5,
+.content-area h6 {
+  position: relative;
+  scroll-margin-top: 120px;
+}
+
+.content-area h1:hover,
+.content-area h2:hover,
+.content-area h3:hover {
+  color: #3b82f6;
+  transition: color 0.3s ease;
+}
+
+/* 인용구 스타일링 */
+.content-area blockquote {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 0 12px 12px 0;
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.content-area blockquote:hover {
+  transform: translateX(8px);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+}
+
+.content-area blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 4rem;
+  color: #3b82f6;
+  opacity: 0.3;
+  font-family: serif;
+}
+
+/* 링크 스타일링 */
+.content-area a {
+  color: #3b82f6;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.content-area a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  transition: width 0.3s ease;
+}
+
+.content-area a:hover::after {
+  width: 100%;
+}
+
+.content-area a:hover {
+  color: #1d4ed8;
+}
+
+/* 리스트 스타일링 */
+.content-area ul li,
+.content-area ol li {
+  margin: 0.5rem 0;
+  position: relative;
+}
+
+.content-area ul li::marker {
+  color: #3b82f6;
+}
+
+.content-area ol li::marker {
+  color: #8b5cf6;
+  font-weight: bold;
+}
+
+/* 표 스타일링 */
+.content-area table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.content-area th {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  font-weight: 600;
+}
+
+.content-area tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.content-area tr:hover {
+  background-color: #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+/* 스크롤 표시기 */
+.reading-content {
+  position: relative;
+}
+
+/* 부드러운 스크롤 동작 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 목차 고정 스타일 강화 */
+.toc-sticky {
+  position: sticky !important;
+  top: 6rem !important;
+  z-index: 50 !important;
+  will-change: transform;
+}
+
+/* 목차 컨테이너가 스크롤 영역에서 벗어나지 않도록 */
+.toc-container {
+  position: relative;
+  height: fit-content;
+  min-height: 200px;
+}
+
+/* 목차 내용 스타일 개선 */
+.toc-content {
+  max-height: calc(100vh - 8rem);
+  overflow: hidden;
+  transform: translateZ(0); /* 하드웨어 가속 */
+}
+
+/* 로딩 애니메이션 */
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-area > * {
+  animation: contentFadeIn 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.content-area > *:nth-child(1) { animation-delay: 0.1s; }
+.content-area > *:nth-child(2) { animation-delay: 0.2s; }
+.content-area > *:nth-child(3) { animation-delay: 0.3s; }
+.content-area > *:nth-child(4) { animation-delay: 0.4s; }
+.content-area > *:nth-child(5) { animation-delay: 0.5s; }

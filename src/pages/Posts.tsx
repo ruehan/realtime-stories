@@ -8,6 +8,7 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { Post } from '../services/PostService';
 import PostCard, { PostCardSkeleton } from '../components/PostCard';
+import SmoothTransition, { StaggeredTransition } from '../components/SmoothTransition';
 
 const Posts: React.FC = () => {
   const { joinPage, pageRoom } = useColyseus();
@@ -109,17 +110,20 @@ const Posts: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold mb-4" style={{ color: '#111827' }}>
-              Development Blog
-            </h1>
-            <p className="text-xl max-w-2xl mx-auto" style={{ color: '#4B5563' }}>
-              Technical articles, insights, and tutorials on modern web development
-            </p>
-          </div>
+          <SmoothTransition type="fade" duration={1000}>
+            <div className="text-center mb-12">
+              <h1 className="text-5xl font-bold mb-4" style={{ color: '#111827' }}>
+                Development Blog
+              </h1>
+              <p className="text-xl max-w-2xl mx-auto" style={{ color: '#4B5563' }}>
+                Technical articles, insights, and tutorials on modern web development
+              </p>
+            </div>
+          </SmoothTransition>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <SmoothTransition type="slide" direction="up" duration={800} delay={200}>
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <input
@@ -155,7 +159,8 @@ const Posts: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
+            </div>
+          </SmoothTransition>
 
           <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
             {/* Posts Grid */}
@@ -218,6 +223,7 @@ const Posts: React.FC = () => {
 
             {/* Sidebar */}
             <div className="xl:col-span-1 space-y-6">
+              <SmoothTransition type="slide" direction="right" duration={800} delay={400}>
               {/* MiniMap */}
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <MiniMap
@@ -263,6 +269,7 @@ const Posts: React.FC = () => {
                   </div>
                 </div>
               </div>
+              </SmoothTransition>
             </div>
           </div>
         </div>
