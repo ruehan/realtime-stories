@@ -1,0 +1,25 @@
+# Task ID: 4
+# Title: Develop MiniMap Feature
+# Status: done
+# Dependencies: 2, 3
+# Priority: high
+# Description: Create a real-time minimap that visualizes the blog as a building with posts as rooms, showing user positions and activities.
+# Details:
+1. Design the minimap UI component with SVG or Canvas
+2. Implement room visualization (blog posts as rooms)
+3. Create user avatar/marker components
+4. Implement real-time position tracking using Colyseus state
+5. Add navigation functionality to move between posts via the minimap
+6. Create animations for user movements
+7. Implement zoom and pan controls
+8. Add tooltips for room information on hover
+9. Create heat map visualization for popular areas
+10. Implement grouping of users in crowded areas
+
+# Test Strategy:
+1. Test rendering of minimap with multiple rooms
+2. Verify user positions update in real-time
+3. Test navigation between posts via minimap
+4. Verify zoom and pan controls work correctly
+5. Test performance with multiple simultaneous users
+6. Ensure tooltips display correct information

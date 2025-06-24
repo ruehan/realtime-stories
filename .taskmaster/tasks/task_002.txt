@@ -1,0 +1,25 @@
+# Task ID: 2
+# Title: Setup Colyseus Server
+# Status: done
+# Dependencies: 1
+# Priority: high
+# Description: Implement the Colyseus server to handle real-time interactions and room management for the blog.
+# Details:
+1. Create a separate server directory in the project
+2. Install Colyseus and required dependencies
+3. Set up basic server configuration with HTTP and WebSocket support
+4. Implement the LobbyRoom for the main blog area
+5. Create PostRoom schema for individual blog posts
+6. Define state handlers for tracking user positions and activities
+7. Implement room creation and joining logic
+8. Set up authentication mechanism (anonymous by default)
+9. Configure CORS for local development
+10. Create server startup script
+
+# Test Strategy:
+1. Test server startup and connection
+2. Verify room creation works correctly
+3. Test joining rooms with multiple test clients
+4. Validate state synchronization between clients
+5. Ensure proper error handling for connection issues
+6. Test room lifecycle (creation, joining, leaving, disposal)
