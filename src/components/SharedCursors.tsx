@@ -9,6 +9,7 @@ interface Cursor {
   color: string;
   isActive: boolean;
   lastUpdate: number;
+  currentPage: string; // 현재 페이지 식별자
 }
 
 interface ViewportInfo {
@@ -28,9 +29,10 @@ interface CursorState {
 interface SharedCursorsProps {
   room: Room | null;
   containerRef?: React.RefObject<HTMLElement | null>;
+  currentPage?: string; // 현재 페이지 식별자
 }
 
-const SharedCursors: React.FC<SharedCursorsProps> = ({ room, containerRef }) => {
+const SharedCursors: React.FC<SharedCursorsProps> = ({ room, containerRef, currentPage = 'unknown' }) => {
   const [cursors, setCursors] = useState<Map<string, Cursor>>(new Map());
   const [cursorStates, setCursorStates] = useState<Map<string, CursorState>>(new Map());
   const [viewport, setViewport] = useState<ViewportInfo>({
@@ -115,10 +117,19 @@ const SharedCursors: React.FC<SharedCursorsProps> = ({ room, containerRef }) => 
       
       if (room.state?.cursors) {
         console.log(`[SharedCursors] Total cursors in room:`, room.state.cursors.size);
+        console.log(`[SharedCursors] Current page filter:`, currentPage);
         
         room.state.cursors.forEach((cursor: Cursor, key: string) => {
-          // Don't show own cursor
-          if (key !== room.sessionId) {
+          console.log(`[SharedCursors] Checking cursor:`, {
+            userName: cursor.userName,
+            cursorPage: cursor.currentPage,
+            currentPage: currentPage,
+            isOwnCursor: key === room.sessionId,
+            match: cursor.currentPage === currentPage
+          });
+          
+          // Don't show own cursor AND only show cursors from same page
+          if (key !== room.sessionId && cursor.currentPage === currentPage) {
             cursorMap.set(key, {
               userId: cursor.userId,
               userName: cursor.userName,
@@ -126,10 +137,11 @@ const SharedCursors: React.FC<SharedCursorsProps> = ({ room, containerRef }) => 
               y: cursor.y,
               color: cursor.color,
               isActive: cursor.isActive,
-              lastUpdate: cursor.lastUpdate
+              lastUpdate: cursor.lastUpdate,
+              currentPage: cursor.currentPage
             });
             // 커서 추가 로그 (간소화)
-            console.log(`[SharedCursors] ${cursor.userName} cursor active: ${cursor.isActive}`);
+            console.log(`[SharedCursors] ${cursor.userName} cursor active: ${cursor.isActive} on page: ${cursor.currentPage}`);
           }
         });
       }
@@ -151,12 +163,13 @@ const SharedCursors: React.FC<SharedCursorsProps> = ({ room, containerRef }) => 
       
       room.send('cursor', {
         x: percentX, // 0~100 범위의 퍼센트 (반응형)
-        y: absoluteY // 문서 절대 픽셀 위치 (스크롤 고려)
+        y: absoluteY, // 문서 절대 픽셀 위치 (스크롤 고려)
+        currentPage: currentPage
       });
       
       // 로그 줄이기 (너무 많은 로그 방지)
       if (Math.random() < 0.05) { // 5%만 로그 출력
-        console.log(`[SharedCursors] Sent: ${percentX.toFixed(1)}%, ${absoluteY}px`);
+        console.log(`[SharedCursors] Sent: ${percentX.toFixed(1)}%, ${absoluteY}px, page: ${currentPage}`);
       }
       lastSentRef.current = now;
     };

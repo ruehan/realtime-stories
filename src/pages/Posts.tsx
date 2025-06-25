@@ -294,7 +294,7 @@ const Posts: React.FC = () => {
       </div>
 
       {/* Shared Cursors */}
-      <SharedCursors room={pageRoom} containerRef={containerRef} />
+      <SharedCursors room={pageRoom} containerRef={containerRef} currentPage="posts" />
     </div>
   );
 };

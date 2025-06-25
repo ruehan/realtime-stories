@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useColyseus } from '../contexts/ColyseusContext';
-import { useLobbyState } from '../hooks/useRoomState';
+import { useLobbyState, usePageState } from '../hooks/useRoomState';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import OnlineUsers from '../components/OnlineUsers';
 import MiniMap from '../components/MiniMap';
+import SharedCursors from '../components/SharedCursors';
 import useMiniMapData from '../hooks/useMiniMapData';
 import useRoomStats from '../hooks/useRoomStats';
 
 const Home: React.FC = () => {
-  const { joinLobby, lobbyRoom, connectionStatus, service } = useColyseus();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { joinLobby, lobbyRoom, joinPage, pageRoom, connectionStatus, service } = useColyseus();
   const { state, users } = useLobbyState(lobbyRoom);
+  const { users: pageUsers, cursors } = usePageState(pageRoom);
   const { handleConnectionError } = useErrorHandler();
   const [isJoining, setIsJoining] = useState(false);
   const [userName, setUserName] = useState(`User${Math.floor(Math.random() * 1000)}`);
@@ -84,8 +87,30 @@ const Home: React.FC = () => {
     };
   }, [connectionStatus, lobbyRoom]);
 
+  // Auto-join home page room for cursor sharing
+  useEffect(() => {
+    let mounted = true;
+    
+    const joinHomeRoom = async () => {
+      if (!pageRoom && mounted) {
+        try {
+          await joinPage('home');
+          console.log('[Home] Joined home page room for cursor sharing');
+        } catch (error) {
+          console.error('[Home] Failed to join home page room:', error);
+        }
+      }
+    };
+    
+    joinHomeRoom();
+    
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div ref={containerRef} className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Welcome to Realtime Stories</h1>
@@ -169,6 +194,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Shared Cursors */}
+      <SharedCursors room={pageRoom} containerRef={containerRef} currentPage="home" />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { Room, Client } from 'colyseus';
 import { PageState } from '../schemas/PageState';
 import { User } from '../schemas/User';
 import { Cursor } from '../schemas/Cursor';
+import { Comment } from '../schemas/Comment';
 
 interface JoinOptions {
   name?: string;
@@ -51,9 +52,10 @@ export class PageRoom extends Room<PageState> {
       if (cursor) {
         cursor.x = data.x; // 퍼센트 값 (0~100, 가로 반응형)
         cursor.y = data.y; // 절대 픽셀 값 (세로 스크롤)
+        cursor.currentPage = data.currentPage || this.pageId; // 현재 페이지 설정
         cursor.lastUpdate = Date.now();
         cursor.isActive = true;
-        console.log(`[PageRoom ${this.pageId}] Cursor update from ${cursor.userName}: (${data.x.toFixed(1)}%, ${data.y}px)`);
+        console.log(`[PageRoom ${this.pageId}] Cursor update from ${cursor.userName}: (${data.x.toFixed(1)}%, ${data.y}px) page: ${cursor.currentPage}`);
       } else {
         console.log(`[PageRoom ${this.pageId}] Cursor not found for client: ${client.sessionId}`);
       }
@@ -74,6 +76,48 @@ export class PageRoom extends Room<PageState> {
         user.status = data.status;
         user.message = data.message || '';
         user.lastActive = Date.now();
+      }
+    });
+
+    // Handle comment creation
+    this.onMessage('add-comment', (client, data) => {
+      const user = this.state.users.get(client.sessionId);
+      if (user && data.content && data.content.trim()) {
+        const commentId = `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const comment = new Comment();
+        
+        comment.id = commentId;
+        comment.postId = data.postId || this.pageId;
+        comment.authorId = client.sessionId;
+        comment.authorName = user.name;
+        comment.content = data.content.trim();
+        comment.createdAt = Date.now();
+        comment.updatedAt = Date.now();
+        comment.isEdited = false;
+        comment.authorColor = this.state.cursors.get(client.sessionId)?.color || '#3B82F6';
+        
+        this.state.comments.set(commentId, comment);
+        console.log(`[PageRoom ${this.pageId}] Comment added by ${user.name}: ${data.content.substring(0, 50)}...`);
+      }
+    });
+
+    // Handle comment deletion
+    this.onMessage('delete-comment', (client, data) => {
+      const comment = this.state.comments.get(data.commentId);
+      if (comment && comment.authorId === client.sessionId) {
+        this.state.comments.delete(data.commentId);
+        console.log(`[PageRoom ${this.pageId}] Comment deleted: ${data.commentId}`);
+      }
+    });
+
+    // Handle comment editing
+    this.onMessage('edit-comment', (client, data) => {
+      const comment = this.state.comments.get(data.commentId);
+      if (comment && comment.authorId === client.sessionId && data.content && data.content.trim()) {
+        comment.content = data.content.trim();
+        comment.updatedAt = Date.now();
+        comment.isEdited = true;
+        console.log(`[PageRoom ${this.pageId}] Comment edited: ${data.commentId}`);
       }
     });
 
@@ -116,7 +160,7 @@ export class PageRoom extends Room<PageState> {
     cursor.color = CURSOR_COLORS[this.state.cursors.size % CURSOR_COLORS.length];
     cursor.lastUpdate = Date.now();
     cursor.isActive = false;
-    cursor.currentPage = this.pageId;
+    cursor.currentPage = this.pageId; // 초기값을 룸의 pageId로 설정
     
     this.state.cursors.set(client.sessionId, cursor);
     this.state.totalUsers = this.state.users.size;

@@ -10,6 +10,7 @@ import { useColyseus } from '../contexts/ColyseusContext';
 import { useLobbyState, usePageState } from '../hooks/useRoomState';
 import MiniMap from '../components/MiniMap';
 import SharedCursors from '../components/SharedCursors';
+import Comments from '../components/Comments';
 import useMiniMapData from '../hooks/useMiniMapData';
 import '../styles/immersive-content.css';
 
@@ -520,6 +521,9 @@ const PostDetail: React.FC = () => {
                   </div>
                 </SmoothTransition>
               )}
+
+              {/* Comments Section */}
+              <Comments room={pageRoom} postId={post.id} />
             </div>
             </div>
           </div>
@@ -527,7 +531,7 @@ const PostDetail: React.FC = () => {
       </div>
       
       {/* Shared Cursors */}
-      <SharedCursors room={pageRoom} containerRef={containerRef} />
+      <SharedCursors room={pageRoom} containerRef={containerRef} currentPage={`post-${post?.id || 'unknown'}`} />
     </div>
   );
 };

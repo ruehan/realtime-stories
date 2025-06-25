@@ -37,13 +37,19 @@ gameServer.define('lobby', LobbyRoom);
 gameServer.define('post', PostRoom);
 
 // Define page rooms for each page
-const pages = ['about', 'portfolio', 'experience', 'categories', 'posts'];
+const pages = ['home', 'about', 'portfolio', 'experience', 'categories', 'posts'];
 pages.forEach(pageId => {
   gameServer.define(`page_${pageId}`, PageRoom, { pageId });
 });
 
 // Define post rooms with dynamic pattern
-gameServer.define('page_post-:postId', PageRoom);
+gameServer.define('page_post-:postId', PageRoom, {
+  onCreate: function(options: any) {
+    // postId 파라미터를 pageId로 설정
+    options.pageId = `post-${options.postId}`;
+    return options;
+  }
+});
 
 // Register Colyseus monitor for development
 app.use('/colyseus', monitor());
