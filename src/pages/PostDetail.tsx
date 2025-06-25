@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Post, postService, TableOfContentsItem } from '../services/PostService';
 import ReadingProgress, { FloatingReadingStats } from '../components/ReadingProgress';
@@ -6,11 +6,20 @@ import HighlightAnimation from '../components/HighlightAnimation';
 import SmoothTransition from '../components/SmoothTransition';
 import ParallaxSection from '../components/ParallaxSection';
 import { useReadingProgress } from '../hooks/useReadingProgress';
+import { useColyseus } from '../contexts/ColyseusContext';
+import { useLobbyState, usePageState } from '../hooks/useRoomState';
+import MiniMap from '../components/MiniMap';
+import SharedCursors from '../components/SharedCursors';
+import useMiniMapData from '../hooks/useMiniMapData';
 import '../styles/immersive-content.css';
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { joinPage, pageRoom, lobbyRoom } = useColyseus();
+  const { state: pageState, users, cursors } = usePageState(pageRoom);
+  const { rooms: lobbyRooms } = useLobbyState(lobbyRoom);
   
   const [post, setPost] = useState<Post | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
@@ -92,6 +101,14 @@ const PostDetail: React.FC = () => {
         // Load related posts
         const related = await postService.getRelatedPosts(postData.id, 3);
         setRelatedPosts(related);
+
+        // Join page room for this specific post
+        try {
+          await joinPage(`post-${postData.id}`);
+          console.log(`[PostDetail] Joined page room for post: ${postData.id}`);
+        } catch (roomError) {
+          console.error('[PostDetail] Failed to join page room:', roomError);
+        }
 
       } catch (err) {
         console.error('Failed to load post:', err);
@@ -262,7 +279,7 @@ const PostDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Reading Progress Bar */}
       <ReadingProgress 
         contentSelector=".reading-content"
@@ -420,7 +437,7 @@ const PostDetail: React.FC = () => {
                         
                         return (
                           <button
-                            key={item.id}
+                            key={`toc-${index}-${item.title}`}
                             onClick={() => {
                               console.log(`TOC Click - Title: "${item.title}", Level: ${item.level}, Anchor: "${item.anchor}"`);
                               console.log(`Current section: "${currentSection}"`);
@@ -508,6 +525,9 @@ const PostDetail: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Shared Cursors */}
+      <SharedCursors room={pageRoom} containerRef={containerRef} />
     </div>
   );
 };

@@ -15,7 +15,13 @@ const port = Number(process.env.PORT || 2567);
 const app = express();
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'http://192.168.219.105:3000'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Create HTTP server
@@ -35,6 +41,9 @@ const pages = ['about', 'portfolio', 'experience', 'categories', 'posts'];
 pages.forEach(pageId => {
   gameServer.define(`page_${pageId}`, PageRoom, { pageId });
 });
+
+// Define post rooms with dynamic pattern
+gameServer.define('page_post-:postId', PageRoom);
 
 // Register Colyseus monitor for development
 app.use('/colyseus', monitor());

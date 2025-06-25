@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useColyseus } from '../contexts/ColyseusContext';
-import { useLobbyState } from '../hooks/useRoomState';
+import { useLobbyState, usePageState } from '../hooks/useRoomState';
 import MiniMap from '../components/MiniMap';
+import SharedCursors from '../components/SharedCursors';
 import useMiniMapData from '../hooks/useMiniMapData';
 import useRoomStats from '../hooks/useRoomStats';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
@@ -11,8 +12,20 @@ import PostCard, { PostCardSkeleton } from '../components/PostCard';
 import SmoothTransition, { StaggeredTransition } from '../components/SmoothTransition';
 
 const Posts: React.FC = () => {
-  const { joinPage, pageRoom } = useColyseus();
-  const { state, users } = useLobbyState(pageRoom);
+  console.log('[Posts] Component rendering...');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { joinPage, pageRoom, lobbyRoom } = useColyseus();
+  console.log('[Posts] useColyseus values:', { joinPage: !!joinPage, pageRoom, lobbyRoom });
+  const { state: pageState, users, cursors } = usePageState(pageRoom);
+  
+  // Debug logs for cursor functionality
+  useEffect(() => {
+    console.log(`[Posts] PageRoom connected:`, !!pageRoom);
+    console.log(`[Posts] PageState:`, pageState);
+    console.log(`[Posts] Users count:`, users?.length || 0);
+    console.log(`[Posts] Cursors count:`, cursors?.length || 0);
+  }, [pageRoom, pageState, users, cursors]);
+  const { rooms: lobbyRooms } = useLobbyState(lobbyRoom);
   
   // Get global room stats from API
   const { roomStats } = useRoomStats();
@@ -43,14 +56,19 @@ const Posts: React.FC = () => {
     let mounted = true;
     
     const joinRoom = async () => {
+      console.log('[Posts] Starting to join room, current pageRoom:', pageRoom);
       if (!pageRoom && mounted) {
         try {
-          await joinPage('posts');
+          console.log('[Posts] Attempting to join page: posts');
+          const room = await joinPage('posts');
+          console.log('[Posts] Successfully joined page room:', room);
         } catch (error) {
           if (error instanceof Error && error.message !== 'Already joining page') {
-            console.error('Failed to join posts room:', error);
+            console.error('[Posts] Failed to join posts room:', error);
           }
         }
+      } else {
+        console.log('[Posts] Skipping join - pageRoom already exists or not mounted');
       }
     };
     
@@ -61,8 +79,8 @@ const Posts: React.FC = () => {
     };
   }, []); // 빈 의존성 배열로 한 번만 실행
   
-  // MiniMap data - use API room stats for global room counts
-  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'posts', roomStats);
+  // MiniMap data - use lobby rooms data for real-time room counts
+  const { rooms, users: miniMapUsers } = useMiniMapData(users, 'posts', roomStats, lobbyRooms);
 
   const handleRoomNavigation = (roomId: string) => {
     switch (roomId) {
@@ -106,7 +124,7 @@ const Posts: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -274,6 +292,9 @@ const Posts: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Shared Cursors */}
+      <SharedCursors room={pageRoom} containerRef={containerRef} />
     </div>
   );
 };

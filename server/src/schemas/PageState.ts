@@ -1,11 +1,11 @@
 import { Schema, MapSchema, type } from '@colyseus/schema';
 import { User } from './User';
-import { RoomInfo } from './RoomInfo';
+import { Cursor } from './Cursor';
 
-export class LobbyState extends Schema {
+export class PageState extends Schema {
   @type({ map: User }) users = new MapSchema<User>();
-  @type({ map: RoomInfo }) rooms = new MapSchema<RoomInfo>();
+  @type({ map: Cursor }) cursors = new MapSchema<Cursor>();
   @type('number') totalUsers!: number;
-  @type('string') currentCategory!: string;
+  @type('string') pageId!: string;
   @type('number') lastActivity!: number;
 }

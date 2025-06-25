@@ -1,6 +1,7 @@
-import { Room, Client } from 'colyseus';
+import { Room, Client, matchMaker } from 'colyseus';
 import { LobbyState } from '../schemas/LobbyState';
 import { User } from '../schemas/User';
+import { RoomInfo } from '../schemas/RoomInfo';
 
 interface JoinOptions {
   name?: string;
@@ -45,6 +46,64 @@ export class LobbyRoom extends Room<LobbyState> {
       });
     });
 
+
+    // Update room statistics every 5 seconds
+    this.setSimulationInterval(async () => {
+      try {
+        const allRooms = await matchMaker.query({});
+        
+        // Reset all room counts
+        this.state.rooms.clear();
+        
+        // Define room names mapping
+        const roomNames: { [key: string]: string } = {
+          'lobby': 'Home',
+          'page_about': 'About',
+          'page_portfolio': 'Portfolio',
+          'page_experience': 'Experience',
+          'page_categories': 'Categories',
+          'page_posts': 'Posts'
+        };
+        
+        // Count users per room type
+        const roomCounts: { [key: string]: number } = {};
+        
+        allRooms.forEach((room) => {
+          const roomType = room.name;
+          if (!roomCounts[roomType]) {
+            roomCounts[roomType] = 0;
+          }
+          roomCounts[roomType] += room.clients;
+        });
+        
+        // Update room info
+        Object.entries(roomCounts).forEach(([roomType, count]) => {
+          const roomInfo = new RoomInfo();
+          roomInfo.roomId = roomType;
+          roomInfo.roomName = roomNames[roomType] || roomType;
+          roomInfo.userCount = count;
+          roomInfo.lastUpdated = Date.now();
+          
+          this.state.rooms.set(roomType, roomInfo);
+        });
+        
+        // Also add any defined rooms with 0 users if not present
+        Object.entries(roomNames).forEach(([roomId, roomName]) => {
+          if (!this.state.rooms.has(roomId)) {
+            const roomInfo = new RoomInfo();
+            roomInfo.roomId = roomId;
+            roomInfo.roomName = roomName;
+            roomInfo.userCount = 0;
+            roomInfo.lastUpdated = Date.now();
+            
+            this.state.rooms.set(roomId, roomInfo);
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error querying rooms:', error);
+      }
+    }, 5000);
 
     // Clean up inactive users every 30 seconds
     this.setSimulationInterval(() => {

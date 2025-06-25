@@ -58,7 +58,7 @@ export interface PostsResponse {
   offset: number;
 }
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:2567/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://192.168.219.105:2567/api';
 
 class PostServiceClient {
   private static instance: PostServiceClient;

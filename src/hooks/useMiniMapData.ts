@@ -31,7 +31,7 @@ const mockPosts = [
   { id: 'posts', title: 'Blog Posts', category: 'content' },
 ];
 
-export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string, roomStats?: RoomStatsMap) => {
+export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string, roomStats?: RoomStatsMap, lobbyRooms?: any[]) => {
   const rooms: Room[] = useMemo(() => {
     // Create a building layout with rooms positioned like floors and sections
     const roomsPerFloor = 3;
@@ -48,9 +48,28 @@ export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string, roo
       const x = buildingPadding + roomInFloor * roomSpacing;
       const y = buildingPadding + floor * floorSpacing;
       
-      // Get user count from room stats API, fallback to current users for current room
+      // Get user count from lobby rooms data first, then room stats API, fallback to current users for current room
       let userCount = 0;
-      if (roomStats && roomStats[post.id]) {
+      
+      // Map room IDs
+      const roomIdMapping: { [key: string]: string } = {
+        'home': 'lobby',
+        'about': 'page_about',
+        'portfolio': 'page_portfolio',
+        'experience': 'page_experience',
+        'categories': 'page_categories',
+        'posts': 'page_posts'
+      };
+      
+      const mappedRoomId = roomIdMapping[post.id] || post.id;
+      
+      // Check lobby rooms data first
+      if (lobbyRooms && lobbyRooms.length > 0) {
+        const roomData = lobbyRooms.find(r => r.roomId === mappedRoomId);
+        if (roomData) {
+          userCount = roomData.userCount || 0;
+        }
+      } else if (roomStats && roomStats[post.id]) {
         userCount = roomStats[post.id].userCount || 0;
       } else if (post.id === currentRoomId && currentUsers && currentUsers.length > 0) {
         userCount = currentUsers.length;
@@ -67,7 +86,7 @@ export const useMiniMapData = (currentUsers?: any[], currentRoomId?: string, roo
         isActive: post.id === currentRoomId
       };
     });
-  }, [currentRoomId, currentUsers, roomStats]);
+  }, [currentRoomId, currentUsers, roomStats, lobbyRooms]);
 
   // Generate user representations only for current room with actual users
   const users: User[] = useMemo(() => {

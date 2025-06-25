@@ -12,8 +12,16 @@ export interface User {
   lastActive: number;
 }
 
+export interface RoomInfo {
+  roomId: string;
+  roomName: string;
+  userCount: number;
+  lastUpdated: number;
+}
+
 export interface LobbyState {
   users: { [key: string]: User };
+  rooms: { [key: string]: RoomInfo };
   totalUsers: number;
   currentCategory: string;
   lastActivity: number;
@@ -28,6 +36,25 @@ export interface Comment {
   isTyping: boolean;
 }
 
+export interface Cursor {
+  userId: string;
+  userName: string;
+  x: number;
+  y: number;
+  color: string;
+  lastUpdate: number;
+  isActive: boolean;
+  currentPage: string;
+}
+
+export interface PageState {
+  users: { [key: string]: User };
+  cursors: { [key: string]: Cursor };
+  totalUsers: number;
+  pageId: string;
+  lastActivity: number;
+}
+
 export interface PostState {
   users: { [key: string]: User };
   postId: string;
@@ -40,11 +67,13 @@ export interface PostState {
 export const useLobbyState = (room: Room | null) => {
   const [state, setState] = useState<LobbyState | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [rooms, setRooms] = useState<RoomInfo[]>([]);
 
   useEffect(() => {
     if (!room) {
       setState(null);
       setUsers([]);
+      setRooms([]);
       return;
     }
 
@@ -57,8 +86,17 @@ export const useLobbyState = (room: Room | null) => {
         });
       }
       
+      // Handle rooms MapSchema
+      const roomArray: RoomInfo[] = [];
+      if (newState.rooms) {
+        newState.rooms.forEach((room: RoomInfo) => {
+          roomArray.push(room);
+        });
+      }
+      
       setState(newState);
       setUsers(userArray);
+      setRooms(roomArray);
     };
 
     room.onStateChange(handleStateChange);
@@ -75,7 +113,57 @@ export const useLobbyState = (room: Room | null) => {
     };
   }, [room]);
 
-  return { state, users };
+  return { state, users, rooms };
+};
+
+export const usePageState = (room: Room | null) => {
+  const [state, setState] = useState<PageState | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [cursors, setCursors] = useState<Cursor[]>([]);
+
+  useEffect(() => {
+    if (!room) {
+      setState(null);
+      setUsers([]);
+      setCursors([]);
+      return;
+    }
+
+    const handleStateChange = (newState: any) => {
+      // Handle MapSchema properly
+      const userArray: User[] = [];
+      if (newState.users) {
+        newState.users.forEach((user: User) => {
+          userArray.push(user);
+        });
+      }
+      
+      // Handle cursors MapSchema
+      const cursorArray: Cursor[] = [];
+      if (newState.cursors) {
+        newState.cursors.forEach((cursor: Cursor) => {
+          cursorArray.push(cursor);
+        });
+      }
+      
+      setState(newState);
+      setUsers(userArray);
+      setCursors(cursorArray);
+    };
+
+    room.onStateChange(handleStateChange);
+    
+    // Get initial state
+    if (room.state) {
+      handleStateChange(room.state);
+    }
+
+    return () => {
+      room.removeAllListeners();
+    };
+  }, [room]);
+
+  return { state, users, cursors };
 };
 
 export const usePostState = (room: Room | null) => {

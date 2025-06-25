@@ -25,7 +25,7 @@ interface ColyseusProviderProps {
 
 export const ColyseusProvider: React.FC<ColyseusProviderProps> = ({ 
   children, 
-  serverUrl = 'ws://localhost:2567' 
+  serverUrl = process.env.REACT_APP_SERVER_URL || 'ws://192.168.219.105:2567' 
 }) => {
   const [service] = useState(() => new ColyseusService({
     url: serverUrl,

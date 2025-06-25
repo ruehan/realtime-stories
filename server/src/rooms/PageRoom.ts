@@ -1,6 +1,7 @@
 import { Room, Client } from 'colyseus';
-import { LobbyState } from '../schemas/LobbyState';
+import { PageState } from '../schemas/PageState';
 import { User } from '../schemas/User';
+import { Cursor } from '../schemas/Cursor';
 
 interface JoinOptions {
   name?: string;
@@ -8,14 +9,26 @@ interface JoinOptions {
   pageId: string;
 }
 
-export class PageRoom extends Room<LobbyState> {
+// Color palette for cursors
+const CURSOR_COLORS = [
+  '#3B82F6', // blue
+  '#10B981', // green
+  '#F59E0B', // amber
+  '#EF4444', // red
+  '#8B5CF6', // purple
+  '#EC4899', // pink
+  '#14B8A6', // teal
+  '#F97316', // orange
+];
+
+export class PageRoom extends Room<PageState> {
   maxClients = 50;
   pageId: string = '';
 
   onCreate(options: any) {
-    const state = new LobbyState();
+    const state = new PageState();
     state.totalUsers = 0;
-    state.currentCategory = options.pageId || 'page';
+    state.pageId = options.pageId || 'page';
     state.lastActivity = Date.now();
     this.setState(state);
     
@@ -29,6 +42,29 @@ export class PageRoom extends Room<LobbyState> {
         user.x = data.x;
         user.y = data.y;
         user.lastActive = Date.now();
+      }
+    });
+
+    // Handle cursor movement
+    this.onMessage('cursor', (client, data) => {
+      const cursor = this.state.cursors.get(client.sessionId);
+      if (cursor) {
+        cursor.x = data.x; // 퍼센트 값 (0~100, 가로 반응형)
+        cursor.y = data.y; // 절대 픽셀 값 (세로 스크롤)
+        cursor.lastUpdate = Date.now();
+        cursor.isActive = true;
+        console.log(`[PageRoom ${this.pageId}] Cursor update from ${cursor.userName}: (${data.x.toFixed(1)}%, ${data.y}px)`);
+      } else {
+        console.log(`[PageRoom ${this.pageId}] Cursor not found for client: ${client.sessionId}`);
+      }
+    });
+
+    // Handle cursor hide (when mouse leaves the window)
+    this.onMessage('cursor-hide', (client) => {
+      const cursor = this.state.cursors.get(client.sessionId);
+      if (cursor) {
+        cursor.isActive = false;
+        console.log(`[PageRoom ${this.pageId}] Cursor hidden for ${cursor.userName}`);
       }
     });
 
@@ -70,14 +106,35 @@ export class PageRoom extends Room<LobbyState> {
     user.lastActive = Date.now();
 
     this.state.users.set(client.sessionId, user);
+    
+    // Create cursor for the user
+    const cursor = new Cursor();
+    cursor.userId = client.sessionId;
+    cursor.userName = user.name;
+    cursor.x = 0;
+    cursor.y = 0;
+    cursor.color = CURSOR_COLORS[this.state.cursors.size % CURSOR_COLORS.length];
+    cursor.lastUpdate = Date.now();
+    cursor.isActive = false;
+    cursor.currentPage = this.pageId;
+    
+    this.state.cursors.set(client.sessionId, cursor);
     this.state.totalUsers = this.state.users.size;
+    
+    console.log(`[PageRoom ${this.pageId}] Cursor created for ${user.name} with color ${cursor.color}`);
   }
 
   onLeave(client: Client, consented: boolean) {
     console.log(`${client.sessionId} left PageRoom: ${this.pageId} (consented: ${consented})`);
     
-    // Always remove user when they leave
+    // Always remove user and cursor when they leave
+    const cursor = this.state.cursors.get(client.sessionId);
+    if (cursor) {
+      console.log(`[PageRoom ${this.pageId}] Removing cursor for ${cursor.userName}`);
+    }
+    
     this.state.users.delete(client.sessionId);
+    this.state.cursors.delete(client.sessionId);
     this.state.totalUsers = this.state.users.size;
     
     console.log(`Users remaining in ${this.pageId}: ${this.state.totalUsers}`);

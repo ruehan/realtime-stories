@@ -10,7 +10,7 @@ export interface RoomStatsMap {
   [key: string]: RoomStats;
 }
 
-export const useRoomStats = (serverUrl: string = 'http://localhost:2567') => {
+export const useRoomStats = (serverUrl: string = 'http://192.168.219.105:2567') => {
   const [roomStats, setRoomStats] = useState<RoomStatsMap>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

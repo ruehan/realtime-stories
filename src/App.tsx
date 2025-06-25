@@ -46,7 +46,7 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ColyseusProvider serverUrl="ws://localhost:2567">
+    <ColyseusProvider serverUrl="ws://192.168.219.105:2567">
       <Router>
         <AppContent />
       </Router>
